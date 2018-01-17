@@ -1,0 +1,2 @@
+IF (Glass.Caption = TRUE)  THEN  InstallAware.Visible := False;
+IF (Glass.Caption = TRUE)  THEN  Separator.Visible := False;

@@ -1,0 +1,4 @@
+IF (RzCheckBox1.Checked = True)  THEN  DriveComboBox1.Enabled := True;
+IF (RzCheckBox1.Checked <> True)  THEN  DriveComboBox1.Enabled := False;
+IF (Glass.Caption = TRUE)  THEN  InstallAware.Visible := False;
+IF (Glass.Caption = TRUE)  THEN  Separator.Visible := False;

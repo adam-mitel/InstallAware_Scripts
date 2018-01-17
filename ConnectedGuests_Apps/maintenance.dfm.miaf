@@ -1,0 +1,8 @@
+IF (FILEUPGRADEREQUIRED.Caption <> TRUE)  THEN  Upgrade.Visible := False;
+IF (FILEUPGRADEREQUIRED.Caption = TRUE)  THEN  Modify.Checked := False;
+IF (FILEUPGRADEREQUIRED.Caption = TRUE)  THEN  Modify.Visible := False;
+IF (FILEUPGRADEREQUIRED.Caption = TRUE)  THEN  Repair.Checked := False;
+IF (FILEUPGRADEREQUIRED.Caption = TRUE)  THEN  Repair.Visible := False;
+IF (FILEUPGRADEREQUIRED.Caption = TRUE)  THEN  Upgrade.Visible := True;
+IF (FILEUPGRADEREQUIRED.Caption = TRUE)  THEN  Upgrade.Top := 128;
+IF (FILEUPGRADEREQUIRED.Caption = TRUE)  THEN  Remove.Top := 152;

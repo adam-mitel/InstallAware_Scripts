@@ -1,0 +1,11 @@
+IF (Glass.Caption = TRUE)  THEN  CompanyName.Visible := False;
+IF (Glass.Caption = TRUE)  THEN  Separator.Align := alNone;
+IF (HOTELMGRTEST.Caption = TRUE)  THEN  MariaDBText.Visible := False;
+IF (HOTELMGRTEST.Caption = TRUE)  THEN  MariaDBBox.Visible := False;
+IF (HOTELMGRTEST.Caption = TRUE)  THEN  MariaDBAnotherServerRadio.Visible := True;
+IF (HOTELMGRTEST.Caption = TRUE)  THEN  MariaDBThisServerRadio.Visible := True;
+IF (HOTELMGRTEST.Caption = TRUE)  THEN  MariaDBHotelMGRChoiceText.Visible := True;
+IF (MariaDBAnotherServerRadio.Checked = True)  THEN  MariaDBAnotherServerText.Visible := True;
+IF (MariaDBAnotherServerRadio.Checked = True)  THEN  MariaDBAnotherServerTextBox.Visible := True;
+IF (MariaDBAnotherServerRadio.Checked <> True)  THEN  MariaDBAnotherServerText.Visible := False;
+IF (MariaDBAnotherServerRadio.Checked <> True)  THEN  MariaDBAnotherServerTextBox.Visible := False;

@@ -1,0 +1,6 @@
+IF (UninstallTest.Caption = TRUE)  THEN  Label1.Caption := Completing Uninstallation;
+IF (UninstallTest.Caption = TRUE)  THEN  Label2.Caption := The Install Wizard is now ready to remove the product from this computer.;
+IF (UninstallTest.Caption = TRUE)  THEN  Label3.Caption := - Click Uninstall to remove the product;
+IF (UninstallTest.Caption = TRUE)  THEN  Label4.Visible := False;
+IF (UninstallTest.Caption = TRUE)  THEN  Label6.Visible := False;
+IF (UninstallTest.Caption = TRUE)  THEN  Next.Caption := &Uninstall >;
