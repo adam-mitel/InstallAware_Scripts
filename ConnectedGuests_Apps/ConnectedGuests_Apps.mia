@@ -63,6 +63,7 @@ Comment
 If
 Set Variable
 End
+Call DLL Function
 Comment
 Comment
 If
@@ -1477,6 +1478,7 @@ $
 {0800F635-40BB-4B7B-8398-7FB2ADDC466B}
 {A1E187C7-EB84-4EF5-841E-26EE3E9D77DB}
 {909850D7-85EB-4738-A906-90E849244BC9}
+{CB8298C4-12B2-45EC-AF50-E6CD94EC0CF4}
 {19C8D428-30E9-4AEF-BB34-0F1EAEA16E4F}
 {30F7E609-2211-47D6-8F04-C599851E50E9}
 {4D9E0625-5E74-4C80-9C8E-55F1B7DF249D}
@@ -5816,7 +5818,10 @@ mMSI.dll\mMSIExec.dll
 kernel32.dll,RemoveDirectoryA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$,$
 mIDEFunc.dll\mEXEFunc.dll
 {808947D4-763F-4EC8-9D61-9C23D31CFAAB}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\fnr.exe,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\fnr.exe,$
+mIDEFunc.dll\mEXEFunc.dll
+{CB8298C4-12B2-45EC-AF50-E6CD94EC0CF4}
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",C:\TTInstall_MACAddress.txt,$
 mIDEFunc.dll\mEXEFunc.dll
 {56BF3613-79F9-4A0F-94ED-1C07DCF91591}
 INSTALLED_BASE
@@ -7065,6 +7070,7 @@ $
 
 
 
+
 C
 
 
@@ -8282,6 +8288,7 @@ C
 
 
 $
+
 
 
 

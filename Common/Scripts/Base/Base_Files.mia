@@ -127,8 +127,11 @@ Create Shortcut
 End
 Comment
 Comment
+Call DLL Function
 If
-Run Program
+Write to Text File
+Else
+Write to Text File
 End
 Run Program
 Comment
@@ -161,7 +164,6 @@ Set Variable
 Comment
 Run Program
 Call DLL Function
-Delete Files
 End
 Comment
 $
@@ -294,10 +296,13 @@ $
 {168CFA5D-4041-4317-B02A-4AFE3F0EFAED}
 {4DEBB56C-41C9-43A6-91EC-2CE3E46F00F4}
 {B0006E29-8B5A-4346-8251-A938C5B0AA9E}
+{4B4CF814-1CEF-46C4-9F7C-2AC8525092CE}
 {25483277-6ED5-469B-8628-FB3104ACE4B6}
-{42EDEE6D-89CB-41BC-9DB2-96F8CA506B09}
+{D1779FA3-F418-457C-B468-EA5FC57CC024}
+{003B4154-8036-4C45-86D8-943B002FD68C}
+{AAC2CF4C-E6B9-427D-AB57-75D7252C1222}
 {F5C37536-4D99-43BB-9DAE-B74F620FA4D2}
-{AEA9C61C-74FE-4F63-AE77-E1605F9A2DA8}
+{8B7A7B06-C276-42E6-AFA4-C104BA114093}
 {D77F0C75-FA86-4E44-8224-90DBB77B6D82}
 {AB42D2EA-C57F-4CF7-B936-59006B148CBE}
 {65C33AB0-7971-4F80-AAA2-66A71348DEE8}
@@ -328,7 +333,6 @@ $
 {2F8F43D1-6DC1-4C27-BBF7-33BA01C0B620}
 {50A4B904-EADB-46FF-8A73-9945CA4BDE0A}
 {E39EE753-631A-4432-BE98-222D80E65B2A}
-{DE66D604-2036-44E6-8671-8D584EB87394}
 {E5C64C32-C7B1-4362-BFFB-DDA3186D5803}
 {B37E2C38-8357-455F-9463-98059200F5A9}
 $
@@ -355,7 +359,7 @@ Install the Temp files
 {6B2108ED-D483-4451-BEE9-F3FD1052702F}
 Create the Shortcuts
 {B0006E29-8B5A-4346-8251-A938C5B0AA9E}
-Create the Startup Batch file scheduled tasks
+Create the RunOnce Batch File which will run upgrade and then program the proper startup routine
 {573F9CBE-3E94-454F-82E6-DF9B2EB234B5}
 
 {C7D12D77-429B-40FB-8B50-E087BF7036BD}
@@ -449,7 +453,7 @@ FALSE
 TIGERILINK
 0
 TRUE
-TRUE
+FALSE
 {DAF21462-A886-47E7-9093-524A1B7F9F73}
 TIGERILINK
 0
@@ -988,18 +992,6 @@ FALSE
 FALSE
 FALSE
 FALSE
-{42EDEE6D-89CB-41BC-9DB2-96F8CA506B09}
-SCHTASKS.exe
-TRUE
-/CREATE /TN "CG Start Data Collection" /TR "$TARGETDIR$\Network\Batch\DC_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F
-TRUE
-
-{AEA9C61C-74FE-4F63-AE77-E1605F9A2DA8}
-SCHTASKS.exe
-TRUE
-/CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F
-TRUE
-
 {50A4B904-EADB-46FF-8A73-9945CA4BDE0A}
 $TARGETDIR$\Temp\vcredist_x86_2017.exe
 TRUE
@@ -1040,6 +1032,12 @@ TRUE
 $TARGETDIR$\Temp\vcredist_x86_2013.exe
 TRUE
 /q
+TRUE
+
+{8B7A7B06-C276-42E6-AFA4-C104BA114093}
+SCHTASKS.exe
+TRUE
+/CREATE /TN "CG RunOnce" /TR "$TARGETDIR$\Temp\RunOnce.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F
 TRUE
 
 {E67D69C3-F7DF-4BD8-8E89-21B9AFB7AD7B}
@@ -1136,25 +1134,28 @@ $TARGETDIR$\systemconfig.exe|FALSE
 kernel32.dll,RemoveDirectoryA,bool,PLUGINRESULT,"pointer to string","$SHORTCUTFILESALL$\Tiger Hotel 2020",$
 mIDEFunc.dll\mEXEFunc.dll
 {E39EE753-631A-4432-BE98-222D80E65B2A}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2017.exe,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2017.exe,$
 mIDEFunc.dll\mEXEFunc.dll
 {BD463410-5AEF-4175-90DD-B798F3A976F4}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2015.exe,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2015.exe,$
 mIDEFunc.dll\mEXEFunc.dll
 {F922E6EA-4697-4EC9-B54F-900A97E304B7}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2013.exe,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2013.exe,$
 mIDEFunc.dll\mEXEFunc.dll
 {3B9D4E46-724E-4193-A1D2-8EEF8397C619}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2012.exe,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2012.exe,$
 mIDEFunc.dll\mEXEFunc.dll
 {DA0848BB-5A3B-480E-AC46-12C598FE3332}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2010.exe,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2010.exe,$
 mIDEFunc.dll\mEXEFunc.dll
 {F64350AC-2CA4-436A-9CE7-3535836967AC}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2008.exe,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2008.exe,$
 mIDEFunc.dll\mEXEFunc.dll
 {5017E626-DF1E-4A9C-9BB0-695C983E999A}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2005.exe,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\vcredist_x86_2005.exe,$
+mIDEFunc.dll\mEXEFunc.dll
+{4B4CF814-1CEF-46C4-9F7C-2AC8525092CE}
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\RunOnce.bat,$
 mIDEFunc.dll\mEXEFunc.dll
 {03166FA1-54D8-48D9-A775-EAFC253F8977}
 $STARTUPALL$
@@ -1211,11 +1212,6 @@ $DESKTOPDIR$
 Tiger Hotel 2020
 TRUE
 FALSE
-{DE66D604-2036-44E6-8671-8D584EB87394}
-$TARGETDIR$\Temp
-vcredist*
-TRUE
-FALSE
 {BAD673CC-E204-41E7-9FA8-50724C72EFCB}
 $TARGETDIR$\InterfaceManager
 *.dll
@@ -1240,7 +1236,20 @@ $TARGETDIR$
 Sleep.exe
 TRUE
 FALSE|FALSE
+{AAC2CF4C-E6B9-427D-AB57-75D7252C1222}
+$TARGETDIR$\Temp\RunOnce.bat
+@ECHO OFF$NEWLINE$$NEWLINE$ECHO *****************************************************$NEWLINE$ECHO.$NEWLINE$ECHO Processing final Connected Guests setup routine...$NEWLINE$ECHO.$NEWLINE$ECHO.$NEWLINE$ECHO.$NEWLINE$ECHO PLEASE DO NOT INTERUPT$NEWLINE$ECHO.$NEWLINE$ECHO *****************************************************$NEWLINE$$NEWLINE$ECHO Checking MySQL has started...$NEWLINE$NET START MySQL$NEWLINE$$NEWLINE$ECHO Running Upgrade...$NEWLINE$C:\tig2020\Upgrade.exe /A$NEWLINE$$NEWLINE$ECHO Schedule startup routine...$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Data Collection" /TR "$TARGETDIR$\Network\Batch\DC_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$$NEWLINE$ECHO Starting interfaces...$NEWLINE$SCHTASKS.exe /RUN /TN "CG Start Data Collection"$NEWLINE$SCHTASKS.exe /RUN /TN "CG Start Interfaces"$NEWLINE$$NEWLINE$ECHO Tidying up files...$NEWLINE$SCHTASKS.exe /DELETE /TN "CG RunOnce" /F$NEWLINE$DEL RunOnce.bat$NEWLINE$
+TRUE
+FALSE
+{D1779FA3-F418-457C-B468-EA5FC57CC024}
+$TARGETDIR$\Temp\RunOnce.bat
+@ECHO OFF$NEWLINE$$NEWLINE$ECHO *****************************************************$NEWLINE$ECHO.$NEWLINE$ECHO Processing final Connected Guests setup routine...$NEWLINE$ECHO.$NEWLINE$ECHO.$NEWLINE$ECHO.$NEWLINE$ECHO PLEASE DO NOT INTERUPT$NEWLINE$ECHO.$NEWLINE$ECHO *****************************************************$NEWLINE$$NEWLINE$ECHO Checking MySQL has started...$NEWLINE$NET START MySQL$NEWLINE$$NEWLINE$ECHO Running Upgrade...$NEWLINE$C:\tig2020\Upgrade.exe /A$NEWLINE$$NEWLINE$ECHO Schedule startup routine...$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$$NEWLINE$ECHO Starting interfaces...$NEWLINE$SCHTASKS.exe /RUN /TN "CG Start Data Collection"$NEWLINE$SCHTASKS.exe /RUN /TN "CG Start Interfaces"$NEWLINE$$NEWLINE$ECHO Tidying up files...$NEWLINE$SCHTASKS.exe /DELETE /TN "CG RunOnce" /F$NEWLINE$DEL RunOnce.bat$NEWLINE$
+FALSE
+TRUE
 $
+
+
+
 
 
 
@@ -1406,8 +1415,9 @@ C
 
 
 
-
 $
+
+
 
 
 

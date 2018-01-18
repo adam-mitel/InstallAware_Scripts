@@ -870,13 +870,13 @@ TRUE
 TRUE
 
 {C481701F-4E27-47D3-BC1D-6107FC9359E4}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\Silverlight.exe,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\Silverlight.exe,$
 mIDEFunc.dll\mEXEFunc.dll
 {72F249A9-7A8D-401D-B856-14A7FB17DAF5}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\Backup.SQL,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\Backup.SQL,$
 mIDEFunc.dll\mEXEFunc.dll
 {8084A083-B390-4A26-A102-DD3FC23387F2}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\Backup.SQL,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\Backup.SQL,$
 mIDEFunc.dll\mEXEFunc.dll
 {9F2928D6-642F-49AC-8C4C-300FAF0E1FFF}
 REGCHECK

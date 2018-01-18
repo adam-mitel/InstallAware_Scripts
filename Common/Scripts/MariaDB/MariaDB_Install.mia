@@ -311,10 +311,10 @@ mIDEFunc.dll\mEXEFunc.dll
 kernel32.dll,RemoveDirectoryA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\MySQL,$
 mIDEFunc.dll\mEXEFunc.dll
 {09144F5D-307F-434B-A358-F58B71566802}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\MySQL_Users.SQL,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\MySQL_Users.SQL,$
 mIDEFunc.dll\mEXEFunc.dll
 {010A13B2-E670-48E3-9106-75914DA448BD}
-kernel32.dll,DeleteFile,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\MySQL_Procedures.SQL,$
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\MySQL_Procedures.SQL,$
 mIDEFunc.dll\mEXEFunc.dll
 {62C2923F-538A-426C-864E-8685705D3338}
 0
