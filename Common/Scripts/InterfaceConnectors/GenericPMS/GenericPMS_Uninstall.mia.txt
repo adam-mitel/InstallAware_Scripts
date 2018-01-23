@@ -1,0 +1,13 @@
+Comment: **************************************************************************************
+Comment: **************************** GenericPMS Specific Script  *****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running GenericPMS_Uninstall
+end
+ 
+Comment: Remove any existing GenericPMS instance
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Delete Virtual Folder "GenericPMS" in IIS Site #$WEBSITEINDEXVAR$
+Run Program $WINSYSDIR$\SC.exe DELETE TigerGenericPMSService (WAIT)
+ 

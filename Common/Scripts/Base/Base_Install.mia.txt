@@ -1,0 +1,172 @@
+Comment: **************************************************************************************
+Comment: ************************** TigerTMS Base Specific Script  ****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running Base_Install
+end
+ 
+Set Variable PROGRESSTEXT to iCharge: Configuring INI and Batch files...
+ 
+Comment: Only if it's a new installation...
+if Variable ALREADYINSTALLED not Equals TRUE
+   
+  Comment: Create DC_Start.bat
+  Set Variable DCSTARTBAT to $TARGETDIR$\Network\Bin\RunBat.exe $TARGETDIR$\Network\batch\startup.bat
+  Replace \\ with \ in variable DCSTARTBAT
+  Write into Text File $TARGETDIR$\Network\Batch\DC_Start.bat from Value $DCSTARTBAT$ (at start of file)
+  Write into Text File $TARGETDIR$\Network\Batch\startup.bat from Value  (at start of file)
+   
+  Edit INI File $TARGETDIR$\config\tigersystem.ini, [Directories] AutoReportOutputDirectory=$TARGETDIR$\Autorpt\
+  Edit INI File $TARGETDIR$\config\tigersystem.ini, [Directories] AutoReportWorkingDirectory=$TARGETDIR$\Autorpt\
+   
+  if Variable TIGERILINK not Equals TRUE
+    Comment: Set the Paths in Collection.conf
+    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Module] QuitFile=$TARGETDRIVE$tig2020\Network\Collection.QIT
+    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Database] TemporaryDirectory=$TARGETDRIVE$tig2020\Network\Tmp
+    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Fallback for CallTables] Name=$TARGETDRIVE$tig2020\Network\Fallback\CallTables.dat
+    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Persistent] PersistentParamFile=$TARGETDRIVE$tig2020\Network\Collection\Persistent.conf
+    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Persistent] PersistentDataFile=$TARGETDRIVE$tig2020\Network\Collection\Persistent.dat
+    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [WorkingData] Name=$TARGETDRIVE$tig2020\Network\Collection\WorkingData.dat
+    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [BulletinLog] Name=$TARGETDRIVE$tig2020\Network\Collection\BULLETIN.log
+    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [EngineeringLog] Name=$TARGETDRIVE$tig2020\Network\Collection\ENGR.log
+    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [DebugLog] Name=$TARGETDRIVE$tig2020\Network\Collection\DEBUG.log
+    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [SessionLog] FileName=$TARGETDRIVE$tig2020\Network\Collection\dcmon.log
+     
+    Comment: Set some defaults in the Switch Samples
+    Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample.conf, [Switch] DiversionChargedPartyRule=3
+    Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample.conf, [Switch] TransferChargedPartyRule=2
+    Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample_2020.conf, [Switch] DiversionChargedPartyRule=3
+    Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample_2020.conf, [Switch] TransferChargedPartyRule=2
+  end
+   
+  Comment: Set up the Automatic Backup Batch variable
+  Set Variable BACKUPBATCHTEXT to @ECHO OFF$NEWLINE$$NEWLINE$ECHO *** Starting a full backup of Tiger Hotel ***$NEWLINE$$NEWLINE$ECHO Starting backup of Database and Call Records to $BACKUPDIR$\db_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -f$TARGETDIR$ -f$BACKUPDIR$\db_backup$NEWLINE$$NEWLINE$ECHO Starting Engineering Backup to $BACKUPDIR$\eng_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -ef$TARGETDIR$ -et$BACKUPDIR$\eng_backup
+  if Variable BACKUP2 Equals TRUE
+    Set Variable TEMP to $BACKUPBATCHTEXT$$NEWLINE$$NEWLINE$ECHO Starting backup of Database and Call Records to $BACKUPDIR2$\db_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -f$TARGETDIR$ -f$BACKUPDIR2$\db_backup$NEWLINE$$NEWLINE$ECHO Starting Engineering Backup to $BACKUPDIR2$\eng_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -ef$TARGETDIR$ -et$BACKUPDIR2$\eng_backup
+    Set Variable BACKUPBATCHTEXT to $TEMP$
+    Set Variable TEMP to 
+  end
+   
+  Comment: Add an IISRESET to the Automatic Backup Batch variable
+  Set Variable TEMP to 
+  Set Variable TEMP to $BACKUPBATCHTEXT$$NEWLINE$$NEWLINE$IISRESET$NEWLINE$$NEWLINE$
+  Set Variable BACKUPBATCHTEXT to $TEMP$
+  Set Variable TEMP to 
+   
+  Comment: If Cisco is installed add a restart of DC_CALL_MANAGER
+  Get Component Base\iCharge/iLink\Interface Connectors\Cisco CUCM Selection State into Variable SELECTED
+  if Variable SELECTED Equals TRUE
+    Set Variable TEMP to $BACKUPBATCHTEXT$NET STOP DC_Call_Manager$NEWLINE$NET START DC_Call_Manager$NEWLINE$NEWLINE
+    Set Variable BACKUPBATCHTEXT to $TEMP$
+    Set Variable TEMP to 
+  end
+   
+  Comment: Write the Automatic Backup Batch File
+  Replace \\ with \ in variable BACKUPBATCHTEXT
+  Write into Text File $TARGETDIR$\Network\Batch\TigerBackup.BAT from Value $BACKUPBATCHTEXT$ (at start of file)
+   
+end
+ 
+Set Variable PROGRESS to 80
+ 
+Comment: Check MySQL is running
+Run Program $WINSYSDIR$\net.exe START MySQL (WAIT)
+ 
+Comment: Check if MariaDB will be installed
+Get Component Base\iCharge/iLink\MariaDB Selection State into Variable SELECTED
+if Variable SELECTED Equals FALSE
+  Comment: This server will not have MariaDB installed on it
+  Edit INI File $TARGETDIR$\config\tigersystem.ini, [Tiger 2000] HostName=$MARIASERVER$
+   
+  Set Variable PROGRESSTEXT to iCharge: Licensing...
+  Run Program $TARGETDIR$\TigLicenseMan.exe  (WAIT)
+   
+  Set Variable PROGRESSTEXT to iCharge: Setting up Data Collection and Interfaces...
+  Run Program $TARGETDIR$\ifaceconfig.exe /h (WAIT)
+else
+  Comment: This server will have MariaDB installed on it
+  Set Variable PROGRESSTEXT to iCharge: Running Upgrade...
+  Run Program $TARGETDIR$\upgrade.exe /A /CR (WAIT)
+  Set Variable PROGRESS to 85
+   
+  Set Variable PROGRESSTEXT to iCharge: Running the License Manager...
+  Run Program $TARGETDIR$\TigLicenseMan.exe  (WAIT)
+   
+  Comment: Check if it is a new installation
+  if Variable ALREADYINSTALLED not Equals TRUE
+    Comment: This is a new installation
+    Set Variable PROGRESSTEXT to iCharge: Setting up Data Collection and Interfaces...
+    Run Program $TARGETDIR$\ifaceconfig.exe /h (WAIT)
+     
+    Set Variable PROGRESSTEXT to iCharge: Installing a Carrier...
+    Run Program $TARGETDIR$\loadrefs.exe  (WAIT)
+     
+    Set Variable PROGRESSTEXT to iCharge: Setting up Database Defaults...
+    Run Program $TARGETDIR$\TigHotelSetup.exe /A /-F /N="Hotel" (WAIT)
+    Set Variable PROGRESS to 90
+  end
+   
+  Comment: Only if it's a new installation...
+  if Variable ALREADYINSTALLED not Equals TRUE
+     
+    Comment: Configure the Automatic Backups
+    Set Variable PROGRESSTEXT to iCharge: Configuring Automatic Backups...
+    if Variable MARIASERVER Equals 
+      Set Variable MYSQLSERVER to 127.0.0.1
+    else
+      Set Variable MYSQLSERVER to $MARIASERVER$
+    end
+    Set Variable BACKUPBATDIR to $TARGETDIR$\Network\Batch\TigerBackup.bat
+    Replace \\ with \ in variable BACKUPBATDIR
+    Replace \\ with \ in variable BACKUPBATDIR
+    Replace \ with \\ in variable BACKUPBATDIR
+    Comment: Create the SQL file
+    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    if Variable MACADDRESS not Equals 
+      Write into Text File $TARGETDIR$\Temp\Backup.SQL from Value INSERT INTO tigersys.crontab (workstation, description, duedate, duetime, enabled, frequnit, freqqty, freqtimeofday, freqlasttod, freqdayofweek, freqdayofmonth, periodunit, periodqty, perioddayofweek, perioddayofmonth, command, parameters, asynchronous) VALUES ('$MACADDRESS$','Daily Backup','2000-01-01','04:35:00',1,3,1,'04:35:00',0,0,1,0,1,0,1,'$BACKUPBATDIR$','',0); (at end of file)
+    else
+      Write into Text File $TARGETDIR$\Temp\Backup.SQL from Value INSERT INTO tigersys.crontab (workstation, description, duedate, duetime, enabled, frequnit, freqqty, freqtimeofday, freqlasttod, freqdayofweek, freqdayofmonth, periodunit, periodqty, perioddayofweek, perioddayofmonth, command, parameters, asynchronous) VALUES ((SELECT inst_id FROM tigersys.instalns ORDER BY ID DESC LIMIT 1), 'Daily Backup','2000-01-01','04:35:00',1,3,1,'04:35:00',0,0,1,0,1,0,1,'$BACKUPBATDIR$','',0); (at end of file)
+    end
+    Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h$MYSQLSERVER$ -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\Backup.SQL" (WAIT)
+    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+     
+    Comment: If there is a MAC Address set MACPrefer
+    if Variable MACADDRESS not Equals 
+      Run Program $TARGETDIR$\Temp\fnr.exe --cl --find ";MACPrefer=00-00-00-00-00-00" --replace "MACPrefer=$MACADDRESS$" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
+      Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "ApplyWMI=0" --replace "ApplyWMI=1" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
+    end
+    if Variable TIGERILINK Equals TRUE
+      Comment: Set the HI INI files to not read CallRecords
+      Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "ReadCallRecords=1" --replace "ReadCallRecords=0" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
+    end
+  end
+end
+ 
+Comment: Do the below for all installations
+Check Registry Key HKLM\SOFTWARE\Microsoft\Silverlight\Version into REGCHECK
+if Variable REGCHECK Equals NO$KEY
+  Set Variable SILVERLIGHTVERSION to 0.0.0.0
+else
+  Set Variable SILVERLIGHTVERSION to $REGCHECK$
+end
+ 
+if Variable SILVERLIGHTVERSION not Greater Than (Version) 5.1.10411.0
+  Set Variable PROGRESSTEXT to iCharge: Installing Microsoft Silverlight...
+  Run Program $TARGETDIR$\Temp\Silverlight.exe /q (WAIT)
+end
+Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+ 
+Comment: These DLL's need to be registered by the 32 bit Regsvr
+Set Variable PROGRESSTEXT to iCharge: Registering DLL's...
+Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\messagemaster.dll (WAIT)
+Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\InterfaceManager\SSRTigerps.dll (WAIT)
+Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\InterfaceManager\SSRclientps.dll (WAIT)
+Run Program $TARGETDIR$\InterfaceManager\SSRTiger.exe /Regserver (WAIT)
+Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\chilkatssh.dll (WAIT)
+Set Variable PROGRESS to 95
+ 
+Comment: Update any legacy Configurations with the new username
+Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "Uid=tigerengr" --replace "Uid=cgengineer" --dir "$TARGETDIR$\InterfaceManager" --fileMask="IFConfig.xml" (WAIT)
+Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "Uid=tigerengr" --replace "Uid=cgengineer" --dir "$TARGETDIR$" --fileMask="*.config" --includeSubDirectories (WAIT)
+ 

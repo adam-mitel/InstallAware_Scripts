@@ -1,0 +1,18 @@
+Comment: **************************************************************************************
+Comment: ****************************** MXP PMS Specific Script  ******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running MXPPMS_Files
+end
+ 
+Create Folder $TARGETDIR$\MXPPMS
+Create Folder $TARGETDIR$\Web\MXPPMS
+ 
+Comment: Delete existing files
+Delete Files $TARGETDIR$\MXPPMS\*.dll (when installing and uninstalling)
+Delete Files $TARGETDIR$\MXPPMS\*.exe (when installing and uninstalling)
+ 
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\MXPPMS\tig2020\*.* to $TARGETDIR$\MXPPMS, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\MXPPMS\wwwroot\*.* to $TARGETDIR$\Web\MXPPMS, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+ 

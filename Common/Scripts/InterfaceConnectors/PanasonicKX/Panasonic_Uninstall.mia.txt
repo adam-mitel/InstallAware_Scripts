@@ -1,0 +1,8 @@
+Comment: **************************************************************************************
+Comment: ***************************** Panasonic Specific Script  *****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running Panasonic_Uninstall
+end
+ 

@@ -1,0 +1,215 @@
+Comment: **************************************************************************************
+Comment: ************************** TigerTMS Base Specific Script  ****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running Base_Envorinment
+end
+ 
+Comment: Read the existing Environment Path variable
+Check Registry Key HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\Path into REGCHECK
+ 
+Comment: Remove old variables and duplicate separaters
+Replace $TARGETDIR$\MySQL\Bin with  in variable REGCHECK
+Replace ;; with ; in variable REGCHECK
+Replace $TARGETDIR$\MariaDB\Bin with  in variable REGCHECK
+Replace ;; with ; in variable REGCHECK
+Replace $TARGETDIR$\Utility with  in variable REGCHECK
+Replace ;; with ; in variable REGCHECK
+Replace $TARGETDIR$ with  in variable REGCHECK
+Replace ;; with ; in variable REGCHECK
+ 
+Comment: Prepare the environment variable and remove duplicate separaters and path characters
+Set Variable TIGPATH to $REGCHECK$;$TARGETDIR$;$TARGETDIR$\Utility;$TARGETDIR$\MariaDB\bin;
+Replace \\ with \ in variable TIGPATH
+Replace ;; with ; in variable TIGPATH
+ 
+Comment: Set the Environment Path Registry Key
+Write Registry Key HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environment\Path, $TIGPATH$ (permanent)
+ 
+Comment: Set %TIGPATH% Environment variable
+Set Environment Variable %TIGDIR% to $TARGETDIR$
+ 
+Comment: Create the Tiger registry entries
+Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\InstallPath, $TARGETDIR$
+Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\HotelInstallation, 1
+Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Local Config, $TARGETDIR$\config\
+Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\TigSetup, 1
+Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Networked Installation, 1
+Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\InstallerVersion, $VERSION$
+ 
+Comment: Remove existing Windows Firewall exceptions
+Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS HTTP/HTTPS for IIS" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS MySQL" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS Interfaces" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS SIP UDP" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS HI.exe" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS EvMux.exe" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS FTP Reports" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests HTTP/HTTPS for IIS" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests MySQL" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests Interfaces" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests SIP UDP" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests HI.exe" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests EvMux.exe" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests FTP Reports" (WAIT)
+ 
+Comment: Add/readd Windows Firewall exceptions
+Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests HTTP/HTTPS for IIS" dir=in action=allow protocol=TCP localport=80,443 (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests MySQL" dir=in action=allow protocol=TCP localport=3306 (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests Interfaces" dir=in action=allow protocol=TCP localport=21,22,1900-1910,2561,3000-3010,5000-5099,9000 (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests SIP UDP" dir=in action=allow protocol=UDP localport=5060 (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests HI.exe" dir=in action=allow program="$TARGETDIR$\HI.exe" enable=yes (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests EvMux.exe" dir=in action=allow program="$TARGETDIR$\evmux.exe" enable=yes (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests FTP Reports" dir=in action=allow program="$TARGETDIR$\ftpd_srv.exe" enable=yes (WAIT)
+ 
+Comment: Create the registry entries to run certain programs as Administrator
+Comment: If the OS is x64 then we must write to the x64 part of the registry
+if Variable OS64 Equals TRUE
+  Set Itanium ia64 - Native 64 bit Windows, Intel Itanium Architecture - installation mode
+end
+ 
+Comment: Collection
+Set Variable REGCHECK to $TARGETDIR$\Network\Bin\Collection.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Interface Manager
+Set Variable REGCHECK to $TARGETDIR$\InterfaceManager\TMSInterfaceManager.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Tiger License Manager
+Set Variable REGCHECK to $TARGETDIR$\tiglicenseman.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: HI
+Set Variable REGCHECK to $TARGETDIR$\hi.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: TigSetup
+Set Variable REGCHECK to $TARGETDIR$\tigsetup.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Tiger Hotel
+Set Variable REGCHECK to $TARGETDIR$\tighotel.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Tigersys
+Set Variable REGCHECK to $TARGETDIR$\tigersys.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: T2SSM
+Set Variable REGCHECK to $TARGETDIR$\t2ssm.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Autorpt
+Set Variable REGCHECK to $TARGETDIR$\autorpt.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Upgrade
+Set Variable REGCHECK to $TARGETDIR$\upgrade.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: ExtMsgBroker
+Set Variable REGCHECK to $TARGETDIR$\ExtMsgBroker\ExtMsgBroker.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Panasonic KXTAPI Interface
+Set Variable REGCHECK to $TARGETDIR$\Panasonic\TigerKXTAPIInterface.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Directory Definition
+Set Variable REGCHECK to $TARGETDIR$\dirdefn.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Tiger Univerge SMDR Collection
+Set Variable REGCHECK to $TARGETDIR$\TigerUnivergeSV7000SMDRInterface.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: TigBackup
+Set Variable REGCHECK to $TARGETDIR$\Utility\TigBackup.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Crond32
+Set Variable REGCHECK to $TARGETDIR$\crond32.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Crond Server
+Set Variable REGCHECK to $TARGETDIR$\crond32_srvr.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: SystemConfig
+Set Variable REGCHECK to $TARGETDIR$\systemconfig.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
+Comment: Set a Windows Defender Exclusion for the tig2020 dir for Client Operating Systems
+if Variable OSTYPE Equals CLIENT
+  Set Variable REGCHECK to $TARGETDIR$
+  Replace \\ with \ in variable REGCHECK
+  Replace \ with \\ in variable REGCHECK
+  Write Registry Key HKLM\SOFTWARE\Microsoft\Windows Defender\Exclusions\Paths\$REGCHECK$, 0
+end
+ 
+Comment: Check if we need to go back to x86 mode
+if Variable OS64 Equals TRUE
+  Set Win32 - Native 32 bit Windows and Windows 32 on Windows 64 (WOW64) - installation mode
+end
+ 
+Comment: Create the Tiger file types
+Create File Type Configuration File with extensions .CONFIG,.CONF,.CFG and associate with program $WINSYSDIR$\notepad.exe
+Create File Type RAW Data with extensions .RAW and associate with program $WINSYSDIR$\notepad.exe
+Create File Type Log File with extensions .LOG,.MSG,.O,.OO,.OOO,.OOOO,.DBG,.PRT and associate with program $WINSYSDIR$\notepad.exe
+Create File Type Hospitality Interface Script with extensions .HIS and associate with program $WINSYSDIR$\notepad.exe
+ 
+Comment: Create the directories
+Create Folder $TARGETDIR$\Autorpt
+Create Folder $TARGETDIR$\Carriers
+Create Folder $TARGETDIR$\Carriers\Loc Files
+Create Folder $TARGETDIR$\Config
+Create Folder $TARGETDIR$\Data
+Create Folder $TARGETDIR$\ExternalMessageBroker
+Create Folder $TARGETDIR$\FilePrinter
+Create Folder $TARGETDIR$\Graphics
+Create Folder $TARGETDIR$\Graphics\Backgrounds
+Create Folder $TARGETDIR$\Graphics\Bitmaps
+Create Folder $TARGETDIR$\Graphics\Icons
+Create Folder $TARGETDIR$\InterfaceManager
+Create Folder $TARGETDIR$\LogFiles
+Create Folder $TARGETDIR$\Scripts
+Create Folder $TARGETDIR$\Temp
+Create Folder $TARGETDIR$\Users
+Create Folder $TARGETDIR$\Utility
+Create Folder $TARGETDIR$\WorkTemp
+Create Folder $TARGETDIR$\Network
+Create Folder $TARGETDIR$\Network\Batch
+Create Folder $TARGETDIR$\Network\Bin
+Comment: If the install is iLink do not create the below Network directories
+if Variable TIGERILINK not Equals TRUE
+  Create Folder $TARGETDIR$\Network\Collection
+  Create Folder $TARGETDIR$\Network\Fallback
+  Create Folder $TARGETDIR$\Network\NetworkConf
+  Create Folder $TARGETDIR$\Network\Switch
+  Create Folder $TARGETDIR$\Network\SwitchConf
+  Create Folder $TARGETDIR$\Network\Tmp
+end
+ 
+Comment: Grant the current user full user rights to the tig2020 dir
+Run Program ICACLS.exe "$TARGETDIR$" /grant "%USERDOMAIN%\%USERNAME%":(OI)(CI)F (WAIT)
+ 

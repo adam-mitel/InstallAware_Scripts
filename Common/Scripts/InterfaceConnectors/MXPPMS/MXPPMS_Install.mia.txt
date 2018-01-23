@@ -1,0 +1,35 @@
+Comment: **************************************************************************************
+Comment: ****************************** MXP PMS Specific Script  ******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running MXPPMS_Install
+end
+ 
+Comment: Remove any existing MXPPMS instance
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Delete Virtual Folder "MXPPMS" in IIS Site #$WEBSITEINDEXVAR$
+if Variable OS64 Equals TRUE
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: MXPPMS (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: MXPPMS (WAIT)
+end
+ 
+Set Variable PROGRESSTEXT to MXPPMS: Creating IIS Virtual Directory...
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Create Virtual Folder "MXPPMS" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\MXPPMS
+Set Variable PROGRESS to 50
+ 
+Comment: If Windows is x64, we need to set the application pool to 32 bit mode
+if Variable OS64 Equals TRUE
+  Set Variable PROGRESSTEXT to MXPPMS: Setting Application Pool to x86 Mode...
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "MXPPMS" /enable32BitAppOnWin64:true (WAIT)
+end
+ 
+Set Variable PROGRESSTEXT to MXPPMS: Installing ...
+Run Program $WINSYSDIR$\SC.exe CREATE TigerGenericMXPPMSService start= auto binPath= $TARGETDIR$\MXPPMS\GenericServiceInterface.exe (WAIT)
+Run Program $WINSYSDIR$\SC.exe FAILURE "TigerGenericMXPPMSService" reset= 0 actions= restart/60000 (WAIT)
+ 
+Comment: Grant permissions to tig2020\Web for the IIS Application Pool
+Run Program ICACLS.exe "$TARGETDIR$\Web" /grant "IIS AppPool\MXPPMS":(OI)(CI)F (WAIT)
+ 

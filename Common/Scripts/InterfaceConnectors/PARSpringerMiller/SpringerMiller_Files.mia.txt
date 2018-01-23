@@ -1,0 +1,14 @@
+Comment: **************************************************************************************
+Comment: ************************** SpringerMiller Specific Script  ***************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running SpringerMiller_Files
+end
+ 
+Create Folder $TARGETDIR$\SpringerMiller
+Create Folder $TARGETDIR$\Web\SpringerMiller
+ 
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\SpringerMiller\tig2020\SpringerMiller\*.* to $TARGETDIR$\SpringerMiller, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\SpringerMiller\wwwroot\SpringerMiller\*.* to $TARGETDIR$\Web\SpringerMiller, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+ 

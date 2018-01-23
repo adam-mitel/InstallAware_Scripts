@@ -1,0 +1,12 @@
+Comment: **************************************************************************************
+Comment: ************************ Call Package Broker Specific Script  ************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running CallPkgBroker_Files
+end
+ 
+Create Folder $TARGETDIR$\CallPkgBroker
+ 
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\iChargeServices\CallPkgBroker\*.* to $TARGETDIR$\CallPkgBroker, ignore files matching wildcard pattern(s) *.pdb;
+ 

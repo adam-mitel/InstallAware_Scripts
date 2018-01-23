@@ -1,0 +1,13 @@
+Comment: **************************************************************************************
+Comment: ************************ Call Package Broker Specific Script  ************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running CallPkgBroker_Uninstall
+end
+ 
+Run Program $WINSYSDIR$\net.exe STOP "TigCallPkgBroker" (WAIT)
+Run Program $WINSYSDIR$\taskkill.exe /IM "TigCallPkgBroker.exe" /F (WAIT)
+Run .NET Uninstaller Class $TARGETDIR$\CallPkgBroker\CallPkgBroker.exe
+Run Program $WINSYSDIR$\sc.exe DELETE "TigCallPkgBroker" (WAIT)
+ 

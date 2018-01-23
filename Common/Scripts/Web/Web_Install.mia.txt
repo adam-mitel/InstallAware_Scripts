@@ -1,0 +1,44 @@
+Comment: **************************************************************************************
+Comment: *************************** Silverlight Specific Script  *****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running Web_Install
+end
+ 
+Comment: Remove any existing iCharge instance
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Delete Virtual Folder "iCharge" in IIS Site #$WEBSITEINDEXVAR$
+if Variable OS64 Equals TRUE
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: iCharge (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: iCharge (WAIT)
+end
+ 
+Set Variable PROGRESSTEXT to Web Front End: Creating IIS Virtual Directory...
+ 
+Comment: Create the configured IIS Web Site and set Read Permissions for IIS
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Comment: Create iCharge for Vista or Newer
+Create Virtual Folder "iCharge" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\iCharge
+ 
+Comment: If Windows is x64, we need to set the application pool to 32 bit mode and other settings
+if Variable OS64 Equals TRUE
+  Set Variable PROGRESSTEXT to Web Front End: Setting Application Pool to x86 Mode...
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iCharge" /enable32BitAppOnWin64:true (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iCharge" -processmodel.loaduserprofile:"false" (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "iCharge" -processmodel.loaduserprofile:"false" (WAIT)
+end
+ 
+Set Variable PROGRESS to 30
+Set Variable PROGRESSTEXT to Web Front End: Configuring Silverlight specific settings...
+ 
+if Variable MARIASERVER not Equals 
+  Comment: If MariaDB isn't installed change the Web.config to point at the new IP Address
+  Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "connectionString=\"Server=localhost;Port=3306" --replace "connectionString=\"Server=$MARIASERVER$;Port=3306" --dir "$TARGETDIR$\Web\iCharge" --fileMask="Web.config" (WAIT)
+end
+ 
+Comment: Grant permissions to tig2020 for the IIS Application Pool
+Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\iCharge":(OI)(CI)F
+ 

@@ -1,0 +1,14 @@
+Comment: **************************************************************************************
+Comment: *************************** NEC Univerge Specific Script  ****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running NECUniverge_Uninstall
+end
+ 
+Comment: Delete all files
+Delete Files $STARTUPALL$\Univerge SMDR Collector (when installing and uninstalling)
+ 
+Comment: Delete the scheduled task
+Run Program SCHTASKS.exe /DELETE /TN "CG NEC Univerge SMDR Collector" /F (WAIT)
+ 

@@ -1,0 +1,12 @@
+Comment: **************************************************************************************
+Comment: *************************** Silverlight Specific Script  *****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running Web_Uninstall
+end
+ 
+Comment: Remove the IIS Web Site
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Delete Virtual Folder "iCharge" in IIS Site #$WEBSITEINDEXVAR$
+ 

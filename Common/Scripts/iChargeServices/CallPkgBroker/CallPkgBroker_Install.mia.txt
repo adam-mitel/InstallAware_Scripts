@@ -1,0 +1,12 @@
+Comment: **************************************************************************************
+Comment: ************************ Call Package Broker Specific Script  ************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running CallPkgBroker_Install
+end
+ 
+Set Variable PROGRESSTEXT to Call Package Broker: Installing Service...
+Run .NET Installer Class $TARGETDIR$\CallPkgBroker\CallPkgBroker.exe
+Run Program $WINSYSDIR$\SC.exe FAILURE "TigCallPkgBroker" reset= 0 actions= restart/60000 (WAIT)
+ 

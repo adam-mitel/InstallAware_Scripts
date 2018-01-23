@@ -1,0 +1,18 @@
+Comment: **************************************************************************************
+Comment: **************************** GenericOut Specific Script  *****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running GenericExt_Files
+end
+ 
+Create Folder $TARGETDIR$\GenericEXT
+Create Folder $TARGETDIR$\Web\GenericEXT
+ 
+Comment: Delete existing files
+Delete Files $TARGETDIR$\GenericEXT\*.dll (when installing and uninstalling)
+Delete Files $TARGETDIR$\GenericEXT\*.exe (when installing and uninstalling)
+ 
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\GenericExt\tig2020\*.* to $TARGETDIR$\GenericEXT, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\GenericExt\wwwroot\*.* to $TARGETDIR$\Web\GenericEXT, ignore files matching wildcard pattern(s) *.pdb, include subfolders
+ 

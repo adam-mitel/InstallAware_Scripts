@@ -1,0 +1,14 @@
+Comment: **************************************************************************************
+Comment: ****************************** Cisco Specific Script  ********************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running Cisco_Files
+end
+ 
+Create Folder $TARGETDIR$\Cisco
+Create Folder $TARGETDIR$\Web\Cisco
+ 
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\Cisco\tig2020\Cisco\* to $TARGETDIR$\Cisco\, ignore files matching wildcard pattern(s) *.pdb;
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\Cisco\wwwroot\Cisco\ClearCallHistory.xml to $TARGETDIR$\Web\Cisco\
+ 

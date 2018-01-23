@@ -1,0 +1,54 @@
+Comment: **************************************************************************************
+Comment: ************************** TigerTMS Base Specific Script  ****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running Base_Install_IIS
+end
+ 
+Comment: Install IIS and Create the Default Web Site
+ 
+Set Variable PROGRESSTEXT to iCharge: Setting up ASP.NET.  This may take a few minutes...
+if Variable OS64 Equals TRUE
+  Run Program $WINDIR$\Microsoft.NET\Framework64\v2.0.50727\aspnet_regiis.exe -i (WAIT)
+  Set Variable PROGRESS to 50
+  Run Program $WINDIR$\Microsoft.NET\Framework64\v3.0\Windows Communication Foundation\ServiceModelReg.exe -i (WAIT)
+  Set Variable PROGRESS to 60
+  Run Program $WINDIR$\Microsoft.NET\Framework64\v4.0.30319\aspnet_regiis.exe -i (WAIT)
+  Set Variable PROGRESS to 70
+else
+  Run Program $WINDIR$\Microsoft.NET\Framework\v2.0.50727\aspnet_regiis.exe -i (WAIT)
+  Set Variable PROGRESS to 50
+  Run Program $WINDIR$\Microsoft.NET\Framework\v3.0\Windows Communication Foundation\ServiceModelReg.exe -i (WAIT)
+  Set Variable PROGRESS to 60
+  Run Program $WINDIR$\Microsoft.NET\Framework\v4.0.30319\aspnet_regiis.exe -i (WAIT)
+  Set Variable PROGRESS to 70
+end
+ 
+Set Variable PROGRESSTEXT to iCharge: Setting up Default Web Site...
+ 
+Comment: Check if the Default Web Site exists.  If not, create it.
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+if Variable WEBSITEINDEXVAR Equals 0
+  Create IIS Site "Default Web Site"
+end
+ 
+Set Variable PROGRESS to 75
+Set Variable PROGRESSTEXT to iCharge: Finishing IIS Configuration...
+ 
+Comment: Configure the required Port Bindings
+if Variable OS64 Equals TRUE
+  Set Itanium ia64 - Native 64 bit Windows, Intel Itanium Architecture - installation mode
+end
+Run Program $WINSYSDIR$\inetsrv\appcmd.exe set site "Default Web Site" /-bindings.[protocol='net.tcp',bindingInformation='808:*'] (WAIT)
+Run Program $WINSYSDIR$\inetsrv\appcmd.exe set site "Default Web Site" /-bindings.[protocol='net.pipe',bindingInformation='*'] (WAIT)
+Run Program $WINSYSDIR$\inetsrv\appcmd.exe set site "Default Web Site" /-bindings.[protocol='net.msmq',bindingInformation='localhost'] (WAIT)
+Run Program $WINSYSDIR$\inetsrv\appcmd.exe set site "Default Web Site" /-bindings.[protocol='msmq.formatname',bindingInformation='localhost'] (WAIT)
+if Variable OS64 Equals TRUE
+  Set Win32 - Native 32 bit Windows and Windows 32 on Windows 64 (WOW64) - installation mode
+end
+ 
+Comment: Set permissions on the tig2020 Directory
+Get System Setting IIS Anonymous User Account into INETUSR
+Set Read Write Permissions on File System Object "$TARGETDIR$" for $INETUSR$
+ 

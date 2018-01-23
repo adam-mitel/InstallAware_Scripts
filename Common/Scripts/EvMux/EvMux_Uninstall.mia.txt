@@ -1,0 +1,11 @@
+Comment: **************************************************************************************
+Comment: ******************************* EvMux Specific Script  *******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running EvMux_Uninstall
+end
+ 
+Run Program $WINSYSDIR$\net.exe STOP "TigEvMux" (WAIT)
+Run Program $WINSYSDIR$\SC.exe DELETE "TigEvMux" (WAIT)
+ 

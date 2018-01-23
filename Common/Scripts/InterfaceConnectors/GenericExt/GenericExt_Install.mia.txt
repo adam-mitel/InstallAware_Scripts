@@ -1,0 +1,35 @@
+Comment: **************************************************************************************
+Comment: **************************** GenericOut Specific Script  *****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running GenericExt_Install
+end
+ 
+Comment: Remove any existing GenericEXT instance
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Delete Virtual Folder "GenericEXT" in IIS Site #$WEBSITEINDEXVAR$
+if Variable OS64 Equals TRUE
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: GenericEXT (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: GenericEXT (WAIT)
+end
+ 
+Set Variable PROGRESSTEXT to Generic EXT: Creating IIS Virtual Directory...
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Create Virtual Folder "GenericEXT" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\GenericEXT
+Set Variable PROGRESS to 50
+ 
+Comment: If Windows is x64, we need to set the application pool to 32 bit mode
+if Variable OS64 Equals TRUE
+  Set Variable PROGRESSTEXT to Generic EXT: Setting Application Pool to x86 Mode...
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "GenericEXT" /enable32BitAppOnWin64:true (WAIT)
+end
+ 
+Set Variable PROGRESSTEXT to Generic EXT: Installing ...
+Run Program $WINSYSDIR$\SC.exe CREATE TigerGenericEXTService start= auto binPath= $TARGETDIR$\GenericEXT\GenericServiceInterface.exe (WAIT)
+Run Program $WINSYSDIR$\SC.exe FAILURE "TigerGenericEXTService" reset= 0 actions= restart/60000 (WAIT)
+ 
+Comment: Grant permissions to tig2020\Web for the IIS Application Pool
+Run Program ICACLS.exe "$TARGETDIR$\Web" /grant "IIS AppPool\GenericEXT":(OI)(CI)F (WAIT)
+ 

@@ -1,0 +1,26 @@
+Comment: **************************************************************************************
+Comment: ***************************** HotelMGR Specific Script  ******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running HotelMGR_Files
+end
+ 
+Comment: Create the Directory Structure
+Create Folder $TARGETDIR$\NotificationEscalationService
+Create Folder $TARGETDIR$\TigStatMan
+Create Folder $TARGETDIR$\Web\HotelMGR
+Create Folder $TARGETDIR$\Web\CGSignalR
+Create Folder $TARGETDIR$\Web\HMGRAPI
+ 
+Comment: Install the Files
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\HotelMGR\LiveBuild\tig2020\NotificationEscalationService\*.* to $TARGETDIR$\NotificationEscalationService, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\HotelMGR\LiveBuild\tig2020\TigStatMan\*.* to $TARGETDIR$\TigStatMan, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\HotelMGR\LiveBuild\tig2020\Web\HotelMGR\*.* to $TARGETDIR$\Web\HotelMGR, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\HotelMGR\LiveBuild\tig2020\Web\CGSignalR\*.* to $TARGETDIR$\Web\TigerTMSSignalR, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\HotelMGR\LiveBuild\tig2020\Web\HMGRAPI\*.* to $TARGETDIR$\Web\HMGRAPI, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+ 
+Comment: Create Shortcut to the Website
+Create Shortcut $SHORTCUTFOLDER$\HotelMGR to http://localhost/HotelMGR
+Create Shortcut $DESKTOPDIR$\HotelMGR to http://localhost/HotelMGR
+ 

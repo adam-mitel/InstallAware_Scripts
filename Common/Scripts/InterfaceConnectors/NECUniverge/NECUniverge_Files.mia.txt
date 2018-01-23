@@ -1,0 +1,10 @@
+Comment: **************************************************************************************
+Comment: *************************** NEC Univerge Specific Script  ****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running NECUniverge_Files
+end
+ 
+ 
+ 

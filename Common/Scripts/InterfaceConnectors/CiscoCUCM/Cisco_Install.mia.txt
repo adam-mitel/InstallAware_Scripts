@@ -1,0 +1,29 @@
+Comment: **************************************************************************************
+Comment: ****************************** Cisco Specific Script  ********************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running Cisco_Install
+end
+ 
+Comment: Create Web Sites 
+Set Variable PROGRESSTEXT to Avaya IPOffice Service: Creating IIS Virtual Directory...
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Create Virtual Folder "Cisco" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\Cisco
+Set Variable PROGRESS to 50
+ 
+Comment: Install the Client service
+Set Variable PROGRESSTEXT to Cisco Service: Installing Cisco Service...
+Run .NET Installer Class $TARGETDIR$\Cisco\CiscoCMClientService.exe
+ 
+Set Variable PROGRESS to 80
+Set Variable PROGRESSTEXT to Cisco Service: Configuring Cisco Service...
+ 
+Comment: Set the Client Service to automatic start
+Run Program $WINSYSDIR$\SC.exe CONFIG "TigerTMSCMClientService" Start= auto (WAIT)
+Run Program $WINSYSDIR$\SC.exe FAILURE "TigerTMSCMClientService" reset= 0 actions= restart/60000 (WAIT)
+ 
+Comment: Install DC_Call_Manager
+Run Program $WINSYSDIR$\sc.exe DELETE DC_Call_Manager (WAIT)
+Run Program $TARGETDIR$\DC_CallManager.exe -install (WAIT)
+ 

@@ -1,0 +1,11 @@
+Comment: **************************************************************************************
+Comment: ******************************* iPost Specific Script  *******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running iPost_Uninstall
+end
+ 
+Run Program $WINSYSDIR$\NET.exe STOP TigeriPostService (WAIT)
+Run Program $WINSYSDIR$\SC.exe DELETE TigeriPostService (WAIT)
+ 

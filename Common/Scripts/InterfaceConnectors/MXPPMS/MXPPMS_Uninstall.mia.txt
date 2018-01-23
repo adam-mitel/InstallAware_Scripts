@@ -1,0 +1,13 @@
+Comment: **************************************************************************************
+Comment: ****************************** MXP PMS Specific Script  ******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running MXPPMS_Uninstall
+end
+ 
+Comment: Remove any existing MXPPMS instance
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Delete Virtual Folder "MXPPMS" in IIS Site #$WEBSITEINDEXVAR$
+Run Program $WINSYSDIR$\SC.exe DELETE TigerMXPPMSService (WAIT)
+ 

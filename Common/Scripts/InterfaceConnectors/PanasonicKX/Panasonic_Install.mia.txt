@@ -1,0 +1,31 @@
+Comment: **************************************************************************************
+Comment: ***************************** Panasonic Specific Script  *****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running Panasonic_Install
+end
+ 
+Set Variable PROGRESSTEXT to Panasonic KXTAPI: Installing...
+Does File Exist $TARGETDIR$\Panasonic\TopTapi3.ocx (get result into variable CHECKSYSTEM)
+if Variable CHECKSYSTEM Equals TRUE
+  Run Program $WINSYSDIR$\Regsvr32.exe /S $TARGETDIR$\Panasonic\topTapi3.ocx (WAIT)
+else
+  MessageBox: ERROR, No Panasonic files in tig2020
+end
+ 
+Set Variable PROGRESS to 50
+ 
+Does File Exist $WINSYSDIR$\TopTapi3.ocx (get result into variable CHECKSYSTEM)
+if Variable CHECKSYSTEM Equals TRUE
+  Run Program $WINSYSDIR$\Regsvr32.exe /S $WINSYSDIR$\topTapi3.ocx (WAIT)
+else
+  MessageBox: ERROR, No Panasonic files in $WINSYSDIR$
+end
+ 
+Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS Panasonic KX-TDA TSP Link" (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests Panasonic KXTAPI Interface" dir=in action=allow protocol=TCP localport=33333 (WAIT)
+ 
+Comment: Add the program to startup
+Run Program SCHTASKS.exe /CREATE /TN "CG Panasonic KXTAPI Interface" /TR "$TARGETDIR$\Panasonic\TigerKXTAPIInterface.exe" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
+ 

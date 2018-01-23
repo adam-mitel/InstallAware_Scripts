@@ -1,0 +1,41 @@
+Comment: **************************************************************************************
+Comment: **************************** IP Office Specific Script  ******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running IPOffice_Install
+end
+ 
+Comment: Remove any existing AvayaIPOffice instance
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Delete Virtual Folder "AvayaIPOffice" in IIS Site #$WEBSITEINDEXVAR$
+if Variable OS64 Equals TRUE
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: AvayaIPOffice (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: AvayaIPOffice (WAIT)
+end
+ 
+Comment: Create the configured IIS Web Site
+Set Variable PROGRESSTEXT to Avaya IPOffice Service: Creating IIS Virtual Directory...
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Create Virtual Folder "AvayaIPOffice" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\AvayaIPOffice
+Set Variable PROGRESS to 50
+ 
+Comment: If Windows is x64, we need to set the application pool to 32 bit mode
+if Variable OS64 Equals TRUE
+  Set Variable PROGRESSTEXT to Avaya IPOffice Service: Setting Application Pool to x86 Mode...
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "AvayaIPOffice" /enable32BitAppOnWin64:true (WAIT)
+end
+ 
+Set Variable PROGRESSTEXT to Avaya IPOffice Service: Installing AvayaIPOfficeClientService...
+Run .NET Installer Class $TARGETDIR$\Avaya\AvayaIPOfficeClientService.exe
+ 
+Set Variable PROGRESS to 80
+Set Variable PROGRESSTEXT to Avaya IPOffice Service: Configuring AvayaIPOfficeClientService...
+ 
+Run Program $WINSYSDIR$\SC.exe CONFIG "AvayaIPOfficeClientService" Start= auto (WAIT)
+Run Program $WINSYSDIR$\SC.exe FAILURE "AvayaIPOfficeClientService" reset= 0 actions= restart/60000 (WAIT)
+ 
+Comment: Grant permissions to tig2020\Web for the IIS Application Pool
+Run Program ICACLS.exe "$TARGETDIR$\Web" /grant "IIS AppPool\AvayaIPOffice":(OI)(CI)F (WAIT)
+ 

@@ -1,0 +1,189 @@
+Comment: **************************************************************************************
+Comment: ************************* Parse and Enable DISM Features  ****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running DISM
+end
+ 
+Comment: Delete the ASP.NET Temporary directories
+Comment: -- iCharge
+Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+Comment: -- IP Office
+Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+Comment: -- EXT In
+Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+Comment: -- Generic
+Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+Comment: -- Generic PMS
+Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+Comment: -- MXP
+Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+Comment: -- Springer Miller
+Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+Comment: -- HotelMGR
+Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+ 
+Comment: Delete any existing log and begin building the DISM command
+Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+Set Variable DISMLOG to $OSDIR$\TTInstall_DISM_List.txt
+Replace \\ with \ in variable DISMLOG
+Set Variable DISMLIST to 
+Set Variable DISMCMD to /online /enable-feature
+if Variable KERNEL Greater Than (Version) 6.1
+  Set Variable DISMCMD to $DISMCMD$ /all
+end
+ 
+Set Variable PROGRESSTEXT to Calculating required IIS/ASPNET DISM commands...
+ 
+if Variable OS64 Equals TRUE
+  Comment: Set the Windows paths to x64
+  Set Itanium ia64 - Native 64 bit Windows, Intel Itanium Architecture - installation mode
+end
+ 
+Run Program CMD.exe /C "DISM.exe /online /get-features" > $DISMLOG$, startup in folder $OSDIR$ (WAIT)
+ 
+Read from Text File #READALL\$DISMLOG$ into Variable DISMLIST
+ 
+if Variable DISMLIST Contains NetFx3$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:NetFx3
+end
+ 
+if Variable DISMLIST Contains NetFx3ServerFeatures$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:NetFx3ServerFeatures
+end
+ 
+if Variable DISMLIST Contains IIS-WebServerRole$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-WebServerRole
+end
+ 
+if Variable DISMLIST Contains IIS-ISAPIFilter$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-ISAPIFilter
+end
+ 
+if Variable DISMLIST Contains IIS-ISAPIExtensions$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-ISAPIExtensions
+end
+ 
+if Variable DISMLIST Contains IIS-RequestFiltering$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-RequestFiltering
+end
+ 
+if Variable DISMLIST Contains IIS-NetFxExtensibility$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-NetFxExtensibility
+end
+ 
+if Variable DISMLIST Contains IIS-ASPNET$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-ASPNET
+end
+ 
+if Variable DISMLIST Contains IIS-ASPNET45$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-ASPNET45
+end
+ 
+if Variable DISMLIST Contains IIS-ASP$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-ASP
+end
+ 
+if Variable DISMLIST Contains IIS-WebServerManagementTools$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-WebServerManagementTools
+end
+ 
+if Variable DISMLIST Contains IIS-DefaultDocument$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-DefaultDocument
+end
+ 
+if Variable DISMLIST Contains IIS-CommonHttpFeatures$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-CommonHttpFeatures
+end
+ 
+if Variable DISMLIST Contains IIS-StaticContent$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-StaticContent
+end
+ 
+if Variable DISMLIST Contains NetFx4Extended-ASPNET45$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:NetFx4Extended-ASPNET45
+end
+ 
+if Variable DISMLIST Contains WCF-HTTP-Activation45$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:WCF-HTTP-Activation45
+end
+ 
+if Variable DISMLIST Contains WAS-WindowsActivationService$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:WAS-WindowsActivationService
+end
+ 
+if Variable DISMLIST Contains WAS-ProcessModel$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:WAS-ProcessModel
+end
+ 
+if Variable DISMLIST Contains WAS-NetFxEnvironment$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:WAS-NetFxEnvironment
+end
+ 
+if Variable DISMLIST Contains WAS-ConfigurationAPI$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:WAS-ConfigurationAPI
+end
+ 
+if Variable DISMLIST Contains WCF-HTTP-Activation$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:WCF-HTTP-Activation
+end
+ 
+if Variable DISMLIST Contains WCF-NonHTTP-Activation$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:WCF-NonHTTP-Activation
+end
+ 
+if Variable DISMLIST Contains IIS-BasicAuthentication$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-BasicAuthentication
+end
+ 
+if Variable DISMLIST Contains IIS-WindowsAuthentication$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-WindowsAuthentication
+end
+ 
+if Variable DISMLIST Contains IIS-DigestAuthentication$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-DigestAuthentication
+end
+ 
+if Variable DISMLIST Contains TelnetClient$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:TelnetClient
+end
+ 
+Set Variable PROGRESSTEXT to Enabling IIS/ASPNET, this may take a few minutes...
+Set Variable DISMCMD to $DISMCMD$ /NoRestart
+Write into Text File $OSDIR$TTInstall_DISMCMD.log from Value DISM.exe $DISMCMD$$NEWLINE$$NEWLINE$ (at end of file)
+Run Program CMD.exe /C "DISM.exe $DISMCMD$ > TTInstall_DISM.log", startup in folder $OSDIR$ (WAIT)
+Comment: Delete if we're not in debug mode
+if Variable DEBUGMODE not Equals TRUE
+  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+end
+ 
+Comment: Check if there was an error with the DISM installation
+Read from Text File #READALL\$OSDIR$\TTInstall_DISM.log into Variable DISMLOG
+if Variable DISMLOG Contains Error:
+  Comment: There was an error - try one more time
+  Call DLL Function kernel32.dll->DeleteFileA
+  Run Program CMD.exe /C "DISM.exe $DISMCMD$ > TTInstall_DISM.log", startup in folder $OSDIR$ (WAIT)
+  Read from Text File #READALL\$OSDIR$\TTInstall_DISM.log into Variable DISMLOG
+  if Variable DISMLOG Contains Error:
+    Comment: DISM failed a second time
+    Write into Text File $OSDIR$TTInstall_DISMCMD.log from Value DISM.exe $DISMCMD$$NEWLINE$$NEWLINE$ (at end of file)
+    MessageBox: $TITLE$: DISM Failed, IIS and ASPNET did not successfully install through DISM. This is most likely because your machine does not have internet access.$NEWLINE$$NEWLINE$A log has been created at $OSDIR$TTInstall_DISM.log.$NEWLINE$$NEWLINE$The DISM command can be found in $OSDIR$TTInstall_DISMCMD.log.$NEWLINE$$NEWLINE$The installer will now terminate. Please resolve the Windows DISM issue and try again.
+    Terminate Installation
+  end
+end
+ 
+Comment: DISM was successful, remove any potential unwanted features
+Run Program DISM.exe /online /disable-feature /featurename:IIS-HttpCompressionStatic /NoRestart (WAIT)
+ 
+Comment: Delete the log unless debug mode is enabled
+if Variable DEBUGMODE not Equals TRUE
+  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+end
+ 
+if Variable OS64 Equals TRUE
+  Comment: Set the windows paths back to x86
+  Set Win32 - Native 32 bit Windows and Windows 32 on Windows 64 (WOW64) - installation mode
+end
+ 

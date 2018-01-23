@@ -1,0 +1,28 @@
+Comment: **************************************************************************************
+Comment: **************************** IP Office Specific Script  ******************************
+Comment: **************************************************************************************
+ 
+Comment: Create the configured IIS Web Site
+Set Variable PROGRESSTEXT to Avaya IPOffice Service: Creating IIS Virtual Directory
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Create Virtual Folder "AvayaIPOffice" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\AvayaIPOffice\
+ 
+Set Variable PROGRESS to 70
+ 
+Comment: If Windows is x64, we need to set the application pool to 32 bit mode
+Get System Setting Windows in 64 bit Mode into CHECKSYSTEM
+if Variable CHECKSYSTEM Equals TRUE
+  Set Variable PROGRESSTEXT to Avaya IPOffice Service: Setting Application Pool to x86 Mode
+  Run Program $WINSYSDIR$\system32\inetsrv\appcmd.exe set apppool AvayaIPOffice /enable32BitAppOnWin64:true /processModel.identityType:LocalSystem
+end
+ 
+Set Variable PROGRESS to 75
+ 
+Set Variable PROGRESSTEXT to Avaya IPOffice Service: Installing AvayaIPOfficeClientService
+Run Program $TARGETDIR$\Services\Avaya\InstallUtil.exe $TARGETDIR$\Services\Avaya\AvayaIPOfficeClientService.exe (WAIT)
+ 
+Set Variable PROGRESS to 80
+ 
+Set Variable PROGRESSTEXT to Avaya IPOffice Service: Configuring AvayaIPOfficeClientService
+Run Program $WINSYSDIR$\sc.exe Config AvayaIPOfficeClientService Start= auto (WAIT)
+ 

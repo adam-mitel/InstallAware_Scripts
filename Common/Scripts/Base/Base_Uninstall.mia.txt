@@ -1,0 +1,25 @@
+Comment: **************************************************************************************
+Comment: ************************** TigerTMS Base Specific Script  ****************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running Base_Uninstall
+end
+ 
+Set Variable PROGRESSTEXT to Creating a Backup before Uninstalling...
+Run Program $TARGETDIR$\Utility\tigbackup.exe -ef$TARGETDIR$ -et$OSDIR$ (WAIT)
+ 
+Recursively Delete Files $SHORTCUTFOLDER$\*
+Delete Files $DESKTOPDIR$\Tiger Hotel.lnk (when installing and uninstalling)
+Delete Files $DESKTOPDIR$\Advanced Reporting.lnk (when installing and uninstalling)
+Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+ 
+Delete Files $STARTUPALL$\Start Data Collection (when installing and uninstalling)
+Delete Files $STARTUPALL$\Start Interfaces (when installing and uninstalling)
+ 
+Run Program SCHTASKS.exe /DELETE /TN "CG Start Data Collection" /F (WAIT)
+Run Program SCHTASKS.exe /DELETE /TN "CG Start Interfaces" /F (WAIT)
+ 
+Comment: Remove the IIS Web Site
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+ 
