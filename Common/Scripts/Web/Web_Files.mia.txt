@@ -38,6 +38,6 @@ Delete Files $SHORTCUTFOLDER$\TigerTMS iCharge (when installing)
 Delete Files $DESKTOPDIR$\TigerTMS iCharge (when installing)
 Delete Files $SHORTCUTFOLDER$\TigerTMS iCharge.lnk (when installing)
 Delete Files $DESKTOPDIR$\TigerTMS iCharge.lnk (when installing)
-Create Shortcut $SHORTCUTFOLDER$\iCharge to $COMMONFILES$\Internet Explorer\iexplore.exe
-Create Shortcut $DESKTOPDIR$\iCharge to $COMMONFILES$\Internet Explorer\iexplore.exe
+Create Shortcut $SHORTCUTFOLDER$\iCharge to C:\Program Files\Internet Explorer\iexplore.exe
+Create Shortcut $DESKTOPDIR$\iCharge to C:\Program Files\Internet Explorer\iexplore.exe
  

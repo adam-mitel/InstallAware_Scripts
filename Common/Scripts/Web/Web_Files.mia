@@ -281,7 +281,7 @@ $TARGETDIR$\Web
 TRUE
 
 {7B9428B3-CDAC-49E2-A6C0-610378CA33C9}
-$COMMONFILES$\Internet Explorer\iexplore.exe|FALSE
+C:\Program Files\Internet Explorer\iexplore.exe|FALSE
 iCharge
 $SHORTCUTFOLDER$|FALSE
 iCharge
@@ -291,7 +291,7 @@ $TARGETDIR$\Graphics\Icons\CGLogo.ico|FALSE
 |
 0|
 {69B7BF8A-E552-4F43-8C2D-822564A73B74}
-$COMMONFILES$\Internet Explorer\iexplore.exe|FALSE
+C:\Program Files\Internet Explorer\iexplore.exe|FALSE
 iCharge
 $DESKTOPDIR$|FALSE
 iCharge
