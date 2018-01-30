@@ -1,0 +1,5 @@
+IF (Glass.Caption = TRUE)  THEN  Separator.Visible := False;
+IF (DISMOFFLINERB.Checked = False)  THEN  Label2.Visible := False;
+IF (DISMOFFLINERB.Checked = False)  THEN  DriveComboBox1.Visible := False;
+IF (DISMOFFLINERB.Checked = True)  THEN  Label2.Visible := True;
+IF (DISMOFFLINERB.Checked = True)  THEN  DriveComboBox1.Visible := True;

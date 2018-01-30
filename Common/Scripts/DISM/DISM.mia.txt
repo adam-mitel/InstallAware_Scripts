@@ -151,8 +151,18 @@ end
  
 Set Variable PROGRESSTEXT to Enabling IIS/ASPNET, this may take a few minutes...
 Set Variable DISMCMD to $DISMCMD$ /NoRestart
-Write into Text File $OSDIR$TTInstall_DISMCMD.log from Value DISM.exe $DISMCMD$$NEWLINE$$NEWLINE$ (at end of file)
+ 
+Comment: If we're doing offline DISM append the disc path
+if Variable DISMOFFLINE Equals TRUE
+  Set Variable WINDISCSOURCE to $WINDISCDRIVE$\sources\sxs
+  Replace \\ with \ in variable WINDISCSOURCE
+  Set Variable DISMCMD to $DISMCMD$ /Source:$WINDISCSOURCE$
+end
+ 
+Comment: Write the CMD to log file and then run the program
+Write into Text File $OSDIR$TTInstall_DISMCMD.log from Value DISM.exe $DISMCMD$$NEWLINE$ (at end of file)
 Run Program CMD.exe /C "DISM.exe $DISMCMD$ > TTInstall_DISM.log", startup in folder $OSDIR$ (WAIT)
+ 
 Comment: Delete if we're not in debug mode
 if Variable DEBUGMODE not Equals TRUE
   Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
@@ -162,15 +172,8 @@ Comment: Check if there was an error with the DISM installation
 Read from Text File #READALL\$OSDIR$\TTInstall_DISM.log into Variable DISMLOG
 if Variable DISMLOG Contains Error:
   Comment: There was an error - try one more time
-  Call DLL Function kernel32.dll->DeleteFileA
-  Run Program CMD.exe /C "DISM.exe $DISMCMD$ > TTInstall_DISM.log", startup in folder $OSDIR$ (WAIT)
-  Read from Text File #READALL\$OSDIR$\TTInstall_DISM.log into Variable DISMLOG
-  if Variable DISMLOG Contains Error:
-    Comment: DISM failed a second time
-    Write into Text File $OSDIR$TTInstall_DISMCMD.log from Value DISM.exe $DISMCMD$$NEWLINE$$NEWLINE$ (at end of file)
-    MessageBox: $TITLE$: DISM Failed, IIS and ASPNET did not successfully install through DISM. This is most likely because your machine does not have internet access.$NEWLINE$$NEWLINE$A log has been created at $OSDIR$TTInstall_DISM.log.$NEWLINE$$NEWLINE$The DISM command can be found in $OSDIR$TTInstall_DISMCMD.log.$NEWLINE$$NEWLINE$The installer will now terminate. Please resolve the Windows DISM issue and try again.
-    Terminate Installation
-  end
+  MessageBox: $TITLE$: DISM Failed, IIS and ASPNET did not successfully install through DISM. This is most likely because the wrong drive was selected for the Windows Disc.$NEWLINE$$NEWLINE$A log has been created at $OSDIR$TTInstall_DISM.log.$NEWLINE$$NEWLINE$The DISM command can be found in $OSDIR$TTInstall_DISMCMD.log.$NEWLINE$$NEWLINE$The installer will now terminate. Please resolve the Windows DISM issue and try again.
+  Terminate Installation
 end
  
 Comment: DISM was successful, remove any potential unwanted features

@@ -43,6 +43,9 @@ Set Variable DELETERESULT to
 Set Variable BACKUP2 to 
 Set Variable KERNEL to 
 Set Variable PLUGINRESULT to 
+Set Variable DISMONLINE to 
+Set Variable DISMOFFLINE to 
+Set Variable WINDISCDRIVE to C:\
  
 Comment: Set the core product variables
 Set Variable INSTALLICHARGE to FALSE
@@ -450,7 +453,7 @@ Comment: If iCharge or iLink isn't selected - default to iLink for HotelMGR
 if Variable INSTALLICHARGE Equals FALSE
   Set Variable TIGERILINK to TRUE
   Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Product, iLink
-  GoTo Label: TigBackup Wizard
+  GoTo Label: DISM Method
 end
 Display Dialog: cubpro, wait for dialog to return (modal)
 if Variable WIZARD Equals BACK
@@ -485,6 +488,30 @@ end
 if Variable TIGERSMB Equals TRUE
   Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Product, SMB
   Set Variable TIGERPRO to TRUE
+end
+label: DISM Method
+Comment: Don't display this on Embedded OS's
+if Variable OSTYPE Equals EMBEDDED
+  GoTo Label: TigBackup Wizard
+end
+if Variable SKIPDISM Equals TRUE
+  GoTo Label: TigBackup Wizard
+end
+Display Dialog: dismmethod, wait for dialog to return (modal)
+if Variable WIZARD Equals BACK
+  GoTo Label: Custom Setup
+else
+  if Variable WIZARD Equals CANCEL
+    GoTo Label: Main Install
+  end
+end
+Comment: Check that one of the options were enabled
+if Variable DISMONLINE Equals 
+  if Variable DISMOFFLINE Equals 
+    Comment: No selection was made
+    MessageBox: $TITLE$ Setup, Please select one of: $NEWLINE$$NEWLINE$Online$NEWLINE$Offline
+    GoTo Label: DISM Method
+  end
 end
 label: TigBackup Wizard
 Set Variable BACKUP2 to FALSE
