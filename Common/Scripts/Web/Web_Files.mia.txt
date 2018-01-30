@@ -15,6 +15,7 @@ Create Folder $TARGETDIR$\Web\iCharge
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\clientaccesspolicy.xml to $WWWROOTDIR$, ignore files matching wildcard pattern(s) *.pdb;
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\crossdomain.xml to $WWWROOTDIR$, ignore files matching wildcard pattern(s) *.pdb;
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\iCharge\*.* to $TARGETDIR$\Web\iCharge, ignore files matching wildcard pattern(s) *.pdb;autorpt;BottomBar.xml;PageNavigation.xml;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\favico.ico to $TARGETDIR$\Web\iCharge
 if Variable TIGERCUB Equals TRUE
   Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\Cub\*.* to $TARGETDIR$\Web\iCharge
 end
