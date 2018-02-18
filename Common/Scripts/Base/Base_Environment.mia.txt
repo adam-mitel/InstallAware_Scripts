@@ -38,6 +38,12 @@ Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\TigSetup, 1
 Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Networked Installation, 1
 Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\InstallerVersion, $VERSION$
  
+Comment: Add Windows Shift+Right Click context menu
+Write Registry Key HKCR\Directory\shell\runas\, Open command window here as Administrator
+Write Registry Key HKCR\Directory\shell\runas\Icon, C:\Windows\System32\imageres.dll,-78
+Write Registry Key HKCR\Directory\shell\runas\Extended, 
+Write Registry Key HKCR\Directory\shell\runas\command\, cmd.exe /s /k pushd "%V"
+ 
 Comment: Remove existing Windows Firewall exceptions
 Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS HTTP/HTTPS for IIS" (WAIT)
 Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS MySQL" (WAIT)
