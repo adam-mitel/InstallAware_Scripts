@@ -87,3 +87,21 @@ if Variable OSNAME Contains 2008
   Write Registry Key HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.2\Server\Enabled, 1
 end
  
+if Variable MGRUSETEMPLATE Equals TRUE
+  Comment: Configure the HotelMGR Template
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\HotelMGR\LiveBuild\Template\HotelMGR_Template.SQL to $TARGETDIR$\Temp
+  if Variable DEBUGMODE Equals TRUE
+    MessageBox: $TITLE$ Debug, HotelMGR: Template database selected,  install template$NEWLINE$$NEWLINE$SQL sent to $TARGETDIR$\Temp - click ok to execute SQL.$NEWLINE$$NEWLINE$Command is left at C:\MGRTemplate.txt after execution
+  end
+  Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\HotelMGR_Template.SQL" (WAIT)
+  if Variable DEBUGMODE Equals TRUE
+    Write into Text File C:\MGRTemplate.txt from Value CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\HotelMGR_Template.SQL" (at end of file)
+  end
+  if Variable DEBUGMODE not Equals TRUE
+    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+  end
+else
+  if Variable DEBUGMODE Equals TRUE
+    MessageBox: $TITLE$ Debug, HotelMGR: Blank database selected, do not install template
+  end
+end

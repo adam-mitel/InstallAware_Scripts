@@ -57,6 +57,8 @@ Set Variable TIGERCUB to FALSE
 Set Variable TIGERILINK to FALSE
 Set Variable TIGERCA to FALSE
 Set Variable TIGERSMB to FALSE
+Set Variable MGRUSEBLANK to FALSE
+Set Variable MGRUSETEMPLATE to FALSE
  
 Comment: Obtain the MAC Address for this installation
 Run Program CMD.exe /C IPCONFIG /ALL | FIND "Physical Address" > C:\TTInstall_MACAddress.txt, startup in folder C:\ (WAIT)
@@ -394,7 +396,7 @@ label: Custom Setup
 Comment: If only HotelMGR is selected, skip the Components Tree
 if Variable INSTALLICHARGE Equals FALSE
   if Variable INSTALLHOTELMGR Equals TRUE
-    GoTo Label: MariaDB Wizard
+    GoTo Label: HotelMGR Template Wizard
   end
 end
 Display Dialog: componentstree, wait for dialog to return (modal)
@@ -413,6 +415,26 @@ if Variable DIALOGTEST Equals FALSE
   if Variable DIALOGTEST2 Equals FALSE
     MessageBox: $TITLE$ Setup, No products are selected for installation.  You must choose at least one product before the installation can continue.
     GoTo Label: Custom Setup
+  end
+end
+label: HotelMGR Template Wizard
+Comment: Only display this wizard if HotelMGR is selected, else skip it
+if Variable INSTALLHOTELMGR not Equals TRUE
+  GoTo Label: MariaDB Wizard
+end
+Display Dialog: hotelmgrtemplate, wait for dialog to return (modal)
+Comment: Check one option is selected
+if Variable MGRUSEBLANK Equals FALSE
+  if Variable MGRUSETEMPLATE Equals FALSE
+    MessageBox: $TITLE$ Setup, Please select whether to use a blank database or a template for HotelMGR.
+    GoTo Label: HotelMGR Template Wizard
+  end
+end
+if Variable WIZARD Equals BACK
+  GoTo Label: Custom Setup
+else
+  if Variable WIZARD Equals CANCEL
+    GoTo Label: Main Install
   end
 end
 label: MariaDB Wizard

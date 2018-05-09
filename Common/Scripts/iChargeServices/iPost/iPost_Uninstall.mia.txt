@@ -7,5 +7,6 @@ if Variable DEBUGMODE Equals TRUE
 end
  
 Run Program $WINSYSDIR$\NET.exe STOP TigeriPostService (WAIT)
+Run Program $WINSYSDIR$\taskkill.exe /IM iPostService.exe /F (WAIT)
 Run Program $WINSYSDIR$\SC.exe DELETE TigeriPostService (WAIT)
  

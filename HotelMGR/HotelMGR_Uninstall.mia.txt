@@ -16,6 +16,10 @@ Delete Virtual Folder "TigerTMSSignalR" in IIS Site #$WEBSITEINDEXVAR$
 Delete Virtual Folder "HMGAPI" in IIS Site #$WEBSITEINDEXVAR$
  
 Comment: Remove the services
+Run Program NET.exe STOP "NotificationEscalationService" (WAIT)
+Run Program NET.exe STOP "TigStatMan" (WAIT)
+Run Program taskkill.exe /IM HotelMGR.NotificationEscalationWinApp.exe /F (WAIT)
+Run Program taskkill.exe /IM TigStatMan.exe (WAIT)
 Run Program SC.exe DELETE "NotificationEscalationService" (WAIT)
 Run Program SC.exe DELETE "TigStatMan" (WAIT)
  

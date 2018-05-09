@@ -9,5 +9,8 @@ end
 Comment: Remove any existing MXPPMS instance
 Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
 Delete Virtual Folder "MXPPMS" in IIS Site #$WEBSITEINDEXVAR$
-Run Program $WINSYSDIR$\SC.exe DELETE TigerMXPPMSService (WAIT)
+ 
+Run Program NET.exe STOP "TigerMXPPMSService"
+Run Program taskkill.exe /IM GenericServiceInterface.exe /F (WAIT)
+Run Program SC.exe DELETE "TigerMXPPMSService" (WAIT)
  
