@@ -46,6 +46,7 @@ Set Variable PLUGINRESULT to
 Set Variable DISMONLINE to 
 Set Variable DISMOFFLINE to 
 Set Variable WINDISCDRIVE to C:\
+Set Variable TASKBATTEXT to 
  
 Comment: Set the core product variables
 Set Variable INSTALLICHARGE to FALSE

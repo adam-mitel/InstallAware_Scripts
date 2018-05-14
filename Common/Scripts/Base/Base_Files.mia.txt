@@ -129,10 +129,17 @@ end
 Comment: Create the scheduled tasks to start interfaces
 if Variable TIGERILINK Equals TRUE
   Run Program SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
+  Set Variable TASKBATTEXT to $TASKBATTEXT$SCHTASKS.exe /DELETE /TN "CG Start Interfaces"$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$
 else
   Run Program SCHTASKS.exe /CREATE /TN "CG Start Data Collection" /TR "$TARGETDIR$\Network\Batch\DC_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
   Run Program SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
+  Set Variable TASKBATTEXT to $TASKBATTEXT$SCHTASKS.exe /DELETE /TN "CG Start Data Collection"$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Interfaces"$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Data Collection" /TR "$TARGETDIR$\Network\Batch\DC_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$
 end
+ 
+Comment: Create batch files to recreate the scheduled tasks under the current user
+Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+Write into Text File $TARGETDIR$\Network\Batch\CreateStartupTasks.bat from Value $TASKBATTEXT$ (at end of file)
+Write into Text File $TARGETDIR$\Network\Batch\CreateIFMStartupTask.bat from Value SCHTASKS.exe /DELETE /TN "CG Start Interface Manager"$NEWLINE$/CREATE /TN "CG Start Interface Manager" /TR "$TARGETDIR$\InterfaceManager\TMSInterfaceManager.exe" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F /V1 (at end of file)
  
 Comment: Create the RunOnce Batch File which will run upgrade
 Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
