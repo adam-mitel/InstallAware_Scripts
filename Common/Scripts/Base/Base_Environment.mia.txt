@@ -220,5 +220,5 @@ Comment: Grant the current user full user rights to the tig2020 dir
 Run Program ICACLS.exe "$TARGETDIR$" /grant "%USERDOMAIN%\%USERNAME%":(OI)(CI)F (WAIT)
 Comment: Grant any authenticated user full rights to tig2020 dir
 Run Program ICACLS "$TARGETDIR$" /grant "Authenticated Users":(OI)(CI)F (WAIT)
-Set Variable TASKBATTEXT to ICACLS.exe "$TARGETDIR$" /grant "%USERDOMAIN%\%USERNAME%":(OI)(CI)F$NEWLINE$ICACLS.exe "$TARGETDIR$" /grant "Authenticated Users":(OI)(CI)F$NEWLINE$
+Set Variable TASKBATTEXT to @ECHO OFF$NEWLINE$$NEWLINE$REM ** Set permissions for the tig2020 directory$NEWLINE$$NEWLINE$ICACLS.exe "$TARGETDIR$" /grant "%USERDOMAIN%\%USERNAME%":(OI)(CI)F$NEWLINE$ICACLS.exe "$TARGETDIR$" /grant "Authenticated Users":(OI)(CI)F$NEWLINE$$NEWLINE$
  

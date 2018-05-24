@@ -1062,6 +1062,10 @@ else
   Run Program $TARGETDIR$\Temp\fnr.exe --cl --dir "$TARGETDIR$\Web" --fileMask "Web.config" --includeSubDirectories --find "<!--<!--" --replace "<!--" (WAIT)
   Run Program $TARGETDIR$\Temp\fnr.exe --cl --dir "$TARGETDIR$\Web" --fileMask "Web.config" --includeSubDirectories --find ">-->-->" --replace ">-->" (WAIT)
    
+  Comment: Now the variable is fully populated, create the Batch File to Recreate Startup tasks as the current user
+  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+  Write into Text File $TARGETDIR$\Network\Batch\RecreateStartupTasks.bat from Value $TASKBATTEXT$ (at end of file)
+   
   if Variable DEBUGMODE Equals TRUE
     MessageBox: $TITLE$ Debug, Completed Testing Files Section
   end

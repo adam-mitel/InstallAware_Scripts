@@ -6,9 +6,4 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running NECUniverge_Install
 end
  
-Comment: Create a batchfile and schedule it
-Delete Files $STARTUPALL$\Univerge SMDR Collector (when installing)
-Delete Files $STARTUPALL$\Univerge SMDR Collector.lnk (when installing)
-Write into Text File $TARGETDIR$\Network\Batch\Univerge.BAT from Value START $TARGETDIR$\TigerUnivergeSV7000SMDRInterface.exe (at end of file)
-Run Program SCHTASKS.exe /CREATE /TN "CG NEC Univerge SMDR Collector" /TR "$TARGETDIR$\Network\Batch\Univerge.BAT" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
  

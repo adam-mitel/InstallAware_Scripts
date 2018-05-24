@@ -26,6 +26,3 @@ end
 Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS Panasonic KX-TDA TSP Link" (WAIT)
 Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests Panasonic KXTAPI Interface" dir=in action=allow protocol=TCP localport=33333 (WAIT)
  
-Comment: Add the program to startup
-Run Program SCHTASKS.exe /CREATE /TN "CG Panasonic KXTAPI Interface" /TR "$TARGETDIR$\Panasonic\TigerKXTAPIInterface.exe" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
- 

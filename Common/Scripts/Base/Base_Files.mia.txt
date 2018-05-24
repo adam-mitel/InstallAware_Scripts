@@ -127,23 +127,22 @@ if Variable TIGERILINK not Equals TRUE
 end
  
 Comment: Create the scheduled tasks to start interfaces
+Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Delete existing tasks$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Data Collection" /F$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Interfaces" /F$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Interface Manager" /F$NEWLINE$$NEWLINE$
 if Variable TIGERILINK Equals TRUE
   Run Program SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
-  Set Variable TASKBATTEXT to $TASKBATTEXT$SCHTASKS.exe /DELETE /TN "CG Start Interfaces"$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$
+  Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Create tasks$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$$NEWLINE$
 else
   Run Program SCHTASKS.exe /CREATE /TN "CG Start Data Collection" /TR "$TARGETDIR$\Network\Batch\DC_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
   Run Program SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
-  Set Variable TASKBATTEXT to $TASKBATTEXT$SCHTASKS.exe /DELETE /TN "CG Start Data Collection"$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Interfaces"$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Data Collection" /TR "$TARGETDIR$\Network\Batch\DC_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$
+  Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Create tasks$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Data Collection" /TR "$TARGETDIR$\Network\Batch\DC_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$$NEWLINE$
 end
  
-Comment: Create batch files to recreate the scheduled tasks under the current user
-Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
-Write into Text File $TARGETDIR$\Network\Batch\CreateStartupTasks.bat from Value $TASKBATTEXT$ (at end of file)
-Write into Text File $TARGETDIR$\Network\Batch\CreateIFMStartupTask.bat from Value SCHTASKS.exe /DELETE /TN "CG Start Interface Manager"$NEWLINE$/CREATE /TN "CG Start Interface Manager" /TR "$TARGETDIR$\InterfaceManager\TMSInterfaceManager.exe" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F /V1 (at end of file)
+Comment: Add IFM option to TASKBATTEXT
+Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Create IFM task if required$NEWLINE$SET STARTIFM=N$NEWLINE$SET /P STARTIFM=Do you want to start Interface Manager automatically at login (Y/[N])?$NEWLINE$IF /I "%STARTIFM%" EQU "Y" (SCHTASKS.exe /CREATE /TN "CG Start Interface Manager" /TR "$TARGETDIR$\InterfaceManager\TMSInterfaceManager.exe" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F /V1)$NEWLINE$$NEWLINE$
  
 Comment: Create the RunOnce Batch File which will run upgrade
 Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
-Write into Text File $TARGETDIR$\Temp\RunOnce.bat from Value @ECHO OFF$NEWLINE$$NEWLINE$ECHO *****************************************************$NEWLINE$ECHO.$NEWLINE$ECHO    Processing final Connected Guests setup routine$NEWLINE$ECHO.$NEWLINE$ECHO.$NEWLINE$ECHO.$NEWLINE$ECHO                PLEASE DO NOT INTERRUPT$NEWLINE$ECHO.$NEWLINE$ECHO *****************************************************$NEWLINE$$NEWLINE$ECHO Waiting for MySQL...$NEWLINE$:WAITFORMYSQL$NEWLINE$$NEWLINE$	SC query MySQL | find "STATE" | find "RUNNING"$NEWLINE$	IF /I "%errorlevel%"=="0" GOTO :START$NEWLINE$	GOTO WAITFORMYSQL$NEWLINE$$NEWLINE$:START$NEWLINE$$NEWLINE$ECHO Running Upgrade...$NEWLINE$$TARGETDIR$\Upgrade.exe /A$NEWLINE$$NEWLINE$ECHO Running Tasks...$NEWLINE$SCHTASKS /RUN /TN "CG Start Data Collection"$NEWLINE$SCHTASKS /RUN /TN "CG Start Interfaces"$NEWLINE$$NEWLINE$ECHO Tidying up files...$NEWLINE$DEL C:\TTInstall_MACAddress.txt$NEWLINE$DEL $TARGETDIR$\Temp\RunOnce.bat$NEWLINE$ (at start of file)
+Write into Text File $TARGETDIR$\Temp\RunOnce.bat from Value @ECHO OFF$NEWLINE$$NEWLINE$ECHO *****************************************************$NEWLINE$ECHO.$NEWLINE$ECHO    Processing final Connected Guests setup routine$NEWLINE$ECHO.$NEWLINE$ECHO.$NEWLINE$ECHO.$NEWLINE$ECHO                PLEASE DO NOT INTERRUPT$NEWLINE$ECHO.$NEWLINE$ECHO *****************************************************$NEWLINE$$NEWLINE$ECHO Waiting for MySQL...$NEWLINE$:WAITFORMYSQL$NEWLINE$$NEWLINE$	SC query MySQL | find "4  RUNNING"$NEWLINE$	IF /I "%errorlevel%"=="0" GOTO :START$NEWLINE$	GOTO WAITFORMYSQL$NEWLINE$$NEWLINE$:START$NEWLINE$$NEWLINE$ECHO Running Upgrade...$NEWLINE$$TARGETDIR$\Upgrade.exe /A$NEWLINE$$NEWLINE$ECHO Running Tasks...$NEWLINE$SCHTASKS /RUN /TN "CG Start Data Collection"$NEWLINE$SCHTASKS /RUN /TN "CG Start Interfaces"$NEWLINE$$NEWLINE$ECHO Tidying up files...$NEWLINE$DEL C:\TTInstall_MACAddress.txt$NEWLINE$DEL $TARGETDIR$\Temp\RunOnce.bat$NEWLINE$ (at start of file)
 Write Registry Key HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce\CGRunOnce, $TARGETDIR$\Temp\RunOnce.bat
  
 if Variable OSTYPE not Equals EMBEDDED

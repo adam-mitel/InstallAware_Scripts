@@ -11,3 +11,9 @@ Create Folder $TARGETDIR$\Panasonic
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\Panasonic\tig2020\Panasonic\*.* to $TARGETDIR$\Panasonic, ignore files matching wildcard pattern(s) *.pdb;
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\Panasonic\system32\*.* to $WINSYSDIR$ (Permanent), ignore files matching wildcard pattern(s) *.pdb;
  
+Comment: Add the program to startup
+Run Program SCHTASKS.exe /CREATE /TN "CG Panasonic KXTAPI Interface" /TR "$TARGETDIR$\Panasonic\TigerKXTAPIInterface.exe" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
+ 
+Comment: Update the Task Scheduler batch file
+Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Panasonic KXTapi$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Panasonic KXTAPI Interface" /F$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Panasonic KXTAPI Interface" /TR "$TARGETDIR$\Panasonic\TigerKXTAPIInterface.exe" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$$NEWLINE$
+ 
