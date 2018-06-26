@@ -59,8 +59,12 @@ Run Program
 Run Program
 Run Program
 Run Program
+Run Program
+Run Program
 Comment
 Comment
+Run Program
+Run Program
 Run Program
 Run Program
 Run Program
@@ -284,6 +288,8 @@ $
 {144E5995-B6E0-44B7-AA08-427647CCEF0B}
 {17D839FE-334B-4A7C-B309-833C400C9619}
 {670EDB6E-8FB9-41CB-89C1-8EE278D3C16A}
+{DB2708F7-93D9-41B6-B095-993753648E8E}
+{14690176-81ED-4B46-AC4E-8CEE3E7A6780}
 {17EFBB53-555C-4AF8-AA03-CA859CE5C39F}
 {01974E2A-4250-4337-9F3F-7D5AFC085073}
 {D1D8BF8E-5208-4873-A068-91821CE68DEF}
@@ -293,6 +299,8 @@ $
 {BA34C053-B8F5-4DE3-BC7F-1F089554A959}
 {090E2D11-45BD-4B69-A4D2-843F71CEA5B8}
 {132A81C2-0822-4510-83ED-8F84A7B3CC57}
+{55401470-B0EE-45E0-80CA-C258AD7577E9}
+{1E094087-09A0-4A83-BC1D-A356C7DDA538}
 {9CB8A189-DC48-4FBA-9E05-D9E088C28642}
 {1B8423E5-1CDE-4D31-8854-1EE6FE53C5D3}
 {4CABB126-75CD-4765-89E4-ACB8A640C613}
@@ -880,6 +888,30 @@ TRUE
 ICACLS
 TRUE
 "$TARGETDIR$" /grant "Authenticated Users":(OI)(CI)F
+TRUE
+
+{55401470-B0EE-45E0-80CA-C258AD7577E9}
+NETSH.exe
+TRUE
+advfirewall firewall add rule name="Connected Guests DC CallManager" dir=in action=allow program="$TARGETDIR$\dc_callmanager.exe" enable=yes
+TRUE
+
+{DB2708F7-93D9-41B6-B095-993753648E8E}
+NETSH.exe
+TRUE
+advfirewall firewall delete rule name="Connected Guests DC CallManager"
+FALSE
+
+{1E094087-09A0-4A83-BC1D-A356C7DDA538}
+NETSH.exe
+TRUE
+advfirewall firewall add rule name="Connected Guests InterfaceManager" dir=in action=allow program="$TARGETDIR$\InterfaceManager\TMSInterfaceManager.exe" enable=yes
+TRUE
+
+{14690176-81ED-4B46-AC4E-8CEE3E7A6780}
+NETSH.exe
+TRUE
+advfirewall firewall delete rule name="Connected Guests InterfaceManager"
 TRUE
 
 {52859C71-9C74-4FDF-8355-907A1BC4B847}
@@ -1579,7 +1611,15 @@ $
 
 
 
+
+
+
+
 $
+
+
+
+
 
 
 
