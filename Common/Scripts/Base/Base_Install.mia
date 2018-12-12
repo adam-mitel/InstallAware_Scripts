@@ -133,6 +133,19 @@ Call DLL Function
 Comment
 Comment
 If
+Set Variable
+Replace String
+Replace String
+Replace String
+If
+Write to Text File
+End
+Run Program
+Call DLL Function
+End
+Comment
+Comment
+If
 Run Program
 Run Program
 End
@@ -304,6 +317,19 @@ $
 {5D5E487D-A98C-4F8F-9124-FC0F279AE1DD}
 {72F249A9-7A8D-401D-B856-14A7FB17DAF5}
 {98441849-FC79-40DE-B891-298C5854C105}
+{F2148299-3D8D-42CB-8CEE-EC85EA1BFF69}
+{3BE00F0D-3904-4C79-B29E-D0D8DDB2F80E}
+{78C5F988-0F6D-4C8A-9A98-152BA7AC063A}
+{9903DD4E-FC6E-403D-8430-2142A17FC156}
+{F0A4955C-D235-47D9-B0D3-2DBDEA9D879A}
+{7FFB93B4-ED4F-45EF-9A38-5E1294B9E10E}
+{86C6F9CC-03D7-4346-9988-4B151E327A8B}
+{D8604A9C-B0AE-40C7-B1F5-6E25AE380C19}
+{EFAD2030-E588-4F77-93C7-03D337E734C0}
+{15A4E54F-A900-4BE1-862F-30DBC7487545}
+{EA15BF89-0FE9-4B6E-9EAA-1EE3CAD71307}
+{71546A07-A62B-4ED1-A527-4C3D601D00C9}
+{5958A5A9-2E67-498C-A5D7-6B36F0320360}
 {70F8BD0B-8BC2-4C31-A8AF-30A9BB5CA9A4}
 {8E7ADEE1-008C-4D99-9413-446133EB1162}
 {0BC37040-5C67-4841-896D-6FA77024EBD2}
@@ -452,6 +478,10 @@ If Cisco is installed add a restart of DC_CALL_MANAGER
 
 {BF3C600E-2692-408A-A0BC-B7162EDCF4F8}
 Update any legacy Configurations with the new username
+{5958A5A9-2E67-498C-A5D7-6B36F0320360}
+
+{F2148299-3D8D-42CB-8CEE-EC85EA1BFF69}
+Create License Expiry Task
 {F753C569-D437-4E0B-A8CC-3653A1A06AC3}
 PROGRESSTEXT$MYAH$MYAH$FALSE
 iCharge: Running Upgrade...
@@ -548,6 +578,9 @@ $TEMP$
 {235BE883-B300-46A9-8EA2-82966F291721}
 TEMP$MYAH$MYAH$FALSE
 
+{78C5F988-0F6D-4C8A-9A98-152BA7AC063A}
+LICENSEBATPATH$MYAH$MYAH$FALSE
+$TARGETDIR$\Network\Batch\LB\LB.bat
 {4885CAFF-86CD-4921-B587-9C1F4BF66494}
 SELECTED
 0
@@ -618,6 +651,16 @@ DEBUGMODE
 0
 TRUE
 FALSE
+{3BE00F0D-3904-4C79-B29E-D0D8DDB2F80E}
+DEPLOYLICENCEBAT
+0
+TRUE
+FALSE
+{86C6F9CC-03D7-4346-9988-4B151E327A8B}
+MACADDRESS
+0
+
+TRUE
 {C40FEEF7-6826-4939-9F5F-54410F5273BB}
 $TITLE$ Debug
 Running Base_Install
@@ -869,6 +912,12 @@ TRUE
 --cl --find "Uid=tigerengr" --replace "Uid=cgengineer" --dir "$TARGETDIR$" --fileMask="*.config" --includeSubDirectories
 TRUE
 
+{15A4E54F-A900-4BE1-862F-30DBC7487545}
+CMD.exe
+TRUE
+/C $TARGETDIR$\MariaDB\bin\mysql.exe -h$MYSQLSERVER$ -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\LB.SQL"
+TRUE
+
 {C481701F-4E27-47D3-BC1D-6107FC9359E4}
 kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\Silverlight.exe,$
 mIDEFunc.dll\mEXEFunc.dll
@@ -877,6 +926,9 @@ kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\
 mIDEFunc.dll\mEXEFunc.dll
 {8084A083-B390-4A26-A102-DD3FC23387F2}
 kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\Backup.SQL,$
+mIDEFunc.dll\mEXEFunc.dll
+{EA15BF89-0FE9-4B6E-9EAA-1EE3CAD71307}
+kernel32.dll,DeleteFileA,bool,PLUGINRESULT,"pointer to string",$TARGETDIR$\Temp\LB.SQL,$
 mIDEFunc.dll\mEXEFunc.dll
 {9F2928D6-642F-49AC-8C4C-300FAF0E1FFF}
 REGCHECK
@@ -906,6 +958,11 @@ TRUE
 {E26A905C-DA7E-49A4-8E1F-A547737B1D3D}
 $TARGETDIR$\Temp\Backup.SQL
 INSERT INTO tigersys.crontab (workstation, description, duedate, duetime, enabled, frequnit, freqqty, freqtimeofday, freqlasttod, freqdayofweek, freqdayofmonth, periodunit, periodqty, perioddayofweek, perioddayofmonth, command, parameters, asynchronous) VALUES ((SELECT inst_id FROM tigersys.instalns ORDER BY ID DESC LIMIT 1), 'Daily Backup','2000-01-01','04:35:00',1,3,1,'04:35:00',0,0,1,0,1,0,1,'$BACKUPBATDIR$','',0);
+FALSE
+TRUE
+{D8604A9C-B0AE-40C7-B1F5-6E25AE380C19}
+$TARGETDIR$\Temp\LB.SQL
+INSERT INTO tigersys.crontab (workstation, description, duedate, duetime, enabled, frequnit, freqqty, freqtimeofday, freqlasttod, freqdayofweek, freqdayofmonth, periodunit, periodqty, perioddayofweek, perioddayofmonth, command, parameters, asynchronous) VALUES ('$MACADDRESS$','Health Check','2000-01-01','04:40:00',0,3,1,'04:40:00',0,0,1,0,1,0,1,'$LICENSEBATPATH$','',0);
 FALSE
 TRUE
 {2BC0E063-339F-44E5-8F38-1673D9390DDB}
@@ -938,6 +995,24 @@ BACKUPBATDIR
 \
 TRUE
 TRUE
+{9903DD4E-FC6E-403D-8430-2142A17FC156}
+LICENSEBATPATH
+\\
+\
+TRUE
+TRUE
+{F0A4955C-D235-47D9-B0D3-2DBDEA9D879A}
+LICENSEBATPATH
+\\
+\
+TRUE
+TRUE
+{7FFB93B4-ED4F-45EF-9A38-5E1294B9E10E}
+LICENSEBATPATH
+\
+\\
+TRUE
+TRUE
 $
 
 
@@ -1111,7 +1186,33 @@ $
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 $
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

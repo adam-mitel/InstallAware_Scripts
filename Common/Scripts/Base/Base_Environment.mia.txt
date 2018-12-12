@@ -219,6 +219,11 @@ if Variable TIGERILINK not Equals TRUE
   Create Folder $TARGETDIR$\Network\SwitchConf
   Create Folder $TARGETDIR$\Network\Tmp
 end
+Comment: If we are to deploy the License Batch File create hidden dir
+if Variable DEPLOYLICENCEBAT Equals TRUE
+  Create Folder $TARGETDIR$\Network\Batch\LB
+  Run Program ATTRIB.exe +h $TARGETDIR$\Network\Batch\LB
+end
  
 Comment: Grant the current user full user rights to the tig2020 dir
 Run Program ICACLS.exe "$TARGETDIR$" /grant "%USERDOMAIN%\%USERNAME%":(OI)(CI)F (WAIT)

@@ -229,7 +229,7 @@ FALSE
 FALSE
 FALSE
 {30A15955-7BAE-4421-8205-DD34F563F9AA}
-\\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\SMB\*.*
+\\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\SMB_CAOnly\*.*
 FALSE|
 $TARGETDIR$\Web\iCharge
 FALSE
@@ -242,7 +242,7 @@ FALSE
 FALSE
 FALSE
 {DD500CFB-9C87-4D1B-8945-E4E952055A13}
-\\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\CAOnly\*.*
+\\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\SMB_CAOnly\*.*
 TRUE|*.pdb;
 $TARGETDIR$\Web\iCharge
 FALSE

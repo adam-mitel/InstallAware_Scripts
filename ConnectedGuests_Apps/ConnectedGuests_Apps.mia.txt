@@ -20,9 +20,6 @@ Set Variable NATIVE_ENGINE to TRUE
 Set Variable NATIVE_OVERWRITE_OLDER to FALSE
 Set Variable NATIVE_OVERWRITE to ALWAYS
  
-Comment: Convert the CMDLINE to upper case for all potential comparisons
-Convert Variable CMDLINE to UPPER case
- 
 Comment: Set default installer Variables
 Set Variable SKIPSYSTEMCHECKS to FALSE
 Set Variable DEBUGMODE to FALSE
@@ -47,6 +44,7 @@ Set Variable DISMONLINE to
 Set Variable DISMOFFLINE to 
 Set Variable WINDISCDRIVE to C:\
 Set Variable TASKBATTEXT to 
+Set Variable DEPLOYLICENCEBAT to FALSE
  
 Comment: Set the core product variables
 Set Variable INSTALLICHARGE to FALSE
@@ -71,18 +69,27 @@ if Variable MACADDRESS Contains 00-00-00-00-00-00
 end
 Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
  
+Comment: Convert the CMDLINE to upper case for all potential comparisons
+Convert Variable CMDLINE to UPPER case
+ 
+Comment: Replace / with - in the CMDLINE so we support both switches
+Replace / with - in variable CMDLINE
+ 
 Comment: Set any parameters passed through the Command Line
-if Variable CMDLINE Contains DEBUG
+if Variable CMDLINE Contains -DEBUG
   Set Variable DEBUGMODE to TRUE
 end
-if Variable CMDLINE Contains SKIPSYSTEMCHECKS
+if Variable CMDLINE Contains -SKIPSYSTEMCHECKS
   Set Variable SKIPSYSTEMCHECKS to TRUE
 end
-if Variable CMDLINE Contains SKIPDISM
+if Variable CMDLINE Contains -SKIPDISM
   Set Variable SKIPDISM to TRUE
 end
-if Variable CMDLINE Contains FORCEALLOPTIONS
+if Variable CMDLINE Contains -FORCEALLOPTIONS
   Set Variable FORCEALLOPTIONS to TRUE
+end
+if Variable CMDLINE Contains -LB
+  Set Variable DEPLOYLICENCEBAT to TRUE
 end
  
 Comment: Get the Kernel Version
@@ -135,20 +142,22 @@ if Variable SKIPSYSTEMCHECKS not Equals TRUE
     Set Variable INITERRORTEXT to $INITERRORTEXT$Run as Administrator$NEWLINE$
   end
    
-  Comment: Check that .NET 4.5.2 is installed
-  if Variable OS64 Equals TRUE
-    Set Itanium ia64 - Native 64 bit Windows, Intel Itanium Architecture - installation mode
-  end
-  Check Registry Key HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\Release into CHECKSYSTEM
-  if Variable OS64 Equals TRUE
-    Set Win32 - Native 32 bit Windows and Windows 32 on Windows 64 (WOW64) - installation mode
-  end
-  if Variable CHECKSYSTEM Contains NO$
-    Set Variable CHECKSYSTEM to 0
-  end
-  if Variable CHECKSYSTEM not Greater Than 379892
-    Set Variable INITERROR to TRUE
-    Set Variable INITERRORTEXT to $INITERRORTEXT$Microsoft .NET 4.5.2$NEWLINE$
+  Comment: Check that .NET 4.5.2 is installed if it's before Windows 10 / 2016 (They already include it built in)
+  if Variable KERNEL Greater Than (Version) 6.2.999
+    if Variable OS64 Equals TRUE
+      Set Itanium ia64 - Native 64 bit Windows, Intel Itanium Architecture - installation mode
+    end
+    Check Registry Key HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\Release into CHECKSYSTEM
+    if Variable OS64 Equals TRUE
+      Set Win32 - Native 32 bit Windows and Windows 32 on Windows 64 (WOW64) - installation mode
+    end
+    if Variable CHECKSYSTEM Contains NO$
+      Set Variable CHECKSYSTEM to 0
+    end
+    if Variable CHECKSYSTEM not Greater Than 379892
+      Set Variable INITERROR to TRUE
+      Set Variable INITERRORTEXT to $INITERRORTEXT$Microsoft .NET 4.5.2$NEWLINE$
+    end
   end
 end
  

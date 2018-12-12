@@ -26,10 +26,10 @@ if Variable TIGERILINK Equals TRUE
   Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\iLink\*.* to $TARGETDIR$\Web\iCharge
 end
 if Variable TIGERCA Equals TRUE
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\CAOnly\*.* to $TARGETDIR$\Web\iCharge, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\SMB_CAOnly\*.* to $TARGETDIR$\Web\iCharge, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 end
 if Variable TIGERSMB Equals TRUE
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\SMB\*.* to $TARGETDIR$\Web\iCharge
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\SMB_CAOnly\*.* to $TARGETDIR$\Web\iCharge
 end
  
 Run Program $WINSYSDIR$\CMD.exe /C REN CompanyLogo.png _CompanyLogo.png, startup in folder $TARGETDIR$\Web\iCharge\ClientBin\Images\ (WAIT)

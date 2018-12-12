@@ -131,6 +131,19 @@ else
     Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h$MYSQLSERVER$ -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\Backup.SQL" (WAIT)
     Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
      
+    Comment: Create License Expiry Task
+    if Variable DEPLOYLICENCEBAT Equals TRUE
+      Set Variable LICENSEBATPATH to $TARGETDIR$\Network\Batch\LB\LB.bat
+      Replace \\ with \ in variable LICENSEBATPATH
+      Replace \\ with \ in variable LICENSEBATPATH
+      Replace \ with \\ in variable LICENSEBATPATH
+      if Variable MACADDRESS not Equals 
+        Write into Text File $TARGETDIR$\Temp\LB.SQL from Value INSERT INTO tigersys.crontab (workstation, description, duedate, duetime, enabled, frequnit, freqqty, freqtimeofday, freqlasttod, freqdayofweek, freqdayofmonth, periodunit, periodqty, perioddayofweek, perioddayofmonth, command, parameters, asynchronous) VALUES ('$MACADDRESS$','Health Check','2000-01-01','04:40:00',0,3,1,'04:40:00',0,0,1,0,1,0,1,'$LICENSEBATPATH$','',0); (at end of file)
+      end
+      Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h$MYSQLSERVER$ -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\LB.SQL" (WAIT)
+      Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    end
+     
     Comment: If there is a MAC Address set MACPrefer
     if Variable MACADDRESS not Equals 
       Run Program $TARGETDIR$\Temp\fnr.exe --cl --find ";MACPrefer=00-00-00-00-00-00" --replace "MACPrefer=$MACADDRESS$" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)

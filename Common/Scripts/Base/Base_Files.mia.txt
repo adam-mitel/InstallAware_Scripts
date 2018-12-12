@@ -66,6 +66,7 @@ if Variable PRODUCTBRAND Equals MITEL
   if Variable TIGERILINK not Equals TRUE
     Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\Bin\Collection.exe to $TARGETDIR$\Network\Bin
     Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\Bin\MiV* to $TARGETDIR$\Network\Bin, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+    Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\Bin\Mitel* to $TARGETDIR$\Network\Bin, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
     Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\Bin\IFM.exe to $TARGETDIR$\Network\Bin, ignore files matching wildcard pattern(s) *.pdb;
     Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\Bin\dcmon.exe to $TARGETDIR$\Network\Bin
     Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\Bin\regex2.dll to $TARGETDIR$\Network\Bin
@@ -86,6 +87,9 @@ end
 Comment: Install the Temp files
 if Variable OSTYPE not Equals EMBEDDED
   Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Temp\vcredist_x86* to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
+  if Variable OS64 Equals TRUE
+    Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Temp\vcredist_x64* to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
+  end
 end
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Temp\Silverlight.exe to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Temp\fnr.exe to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
@@ -95,6 +99,11 @@ if Variable OS64 Equals TRUE
   Copy Local Files $WINSYSDIR64$\timeout.exe to $TARGETDIR$\Sleep.exe
 else
   Copy Local Files $WINSYSDIR$\timeout.exe to $TARGETDIR$\Sleep.exe
+end
+ 
+Comment: Install License Batch File
+if Variable DEPLOYLICENCEBAT Equals TRUE
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\LicenseBatchFile\* to $TARGETDIR$\Network\Batch\LB, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 end
  
 Comment: Delete old Shortcuts if it is already installed
@@ -146,8 +155,8 @@ Write into Text File $TARGETDIR$\Temp\RunOnce.bat from Value @ECHO OFF$NEWLINE$$
 Write Registry Key HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce\CGRunOnce, $TARGETDIR$\Temp\RunOnce.bat
  
 if Variable OSTYPE not Equals EMBEDDED
-  Comment: Install Visual C++ Runtimes and then delete
-  Set Variable PROGRESSTEXT to iCharge: Installing Visual Studio C++ 2005-2017, this may take a minute...
+  Comment: Install x86 Visual C++ Runtimes and then delete
+  Set Variable PROGRESSTEXT to iCharge: Installing x86 Visual Studio C++ 2005-2017, this may take a minute...
   Run Program $TARGETDIR$\Temp\vcredist_x86_2005.exe /Q (WAIT)
   Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
   Set Variable PROGRESS to 20
@@ -167,5 +176,26 @@ if Variable OSTYPE not Equals EMBEDDED
   Run Program $TARGETDIR$\Temp\vcredist_x86_2017.exe /q (WAIT)
   Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
   Set Variable PROGRESS to 100
+   
+  if Variable OS64 Equals TRUE
+    Comment: Install x64 Visual C++ Runtimes and then delete
+    Set Variable PROGRESSTEXT to iCharge: Installing x64 Visual Studio C++ 2008-2017, this may take a minute...
+     
+    Run Program $TARGETDIR$\Temp\vcredist_x64_2008.exe /q (WAIT)
+    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    Set Variable PROGRESS to 40
+     
+    Run Program $TARGETDIR$\Temp\vcredist_x64_2012.exe /q (WAIT)
+    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    Set Variable PROGRESS to 60
+     
+    Run Program $TARGETDIR$\Temp\vcredist_x64_2013.exe /q (WAIT)
+    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    Set Variable PROGRESS to 80
+     
+    Run Program $TARGETDIR$\Temp\vcredist_x64_2017.exe /q (WAIT)
+    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    Set Variable PROGRESS to 100
+  end
 end
  
