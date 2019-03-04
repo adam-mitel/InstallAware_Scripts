@@ -9,19 +9,26 @@ end
 Create Folder $TARGETDIR$\MariaDB
 Create Folder $TARGETDIR$\MariaDB\bin
 Create Folder $TARGETDIR$\MariaDB\data
-Create Folder $TARGETDIR$\MariaDB\include
 Create Folder $TARGETDIR$\MariaDB\lib
 Create Folder $TARGETDIR$\MariaDB\share
 Create Folder $TARGETDIR$\MariaDB\temp
  
+Comment: If a previous installtion is older than 50.0.0.0 then we need to set the installer to overwrite older filles
 if Variable MYSQLUPGRADEREQUIRED Equals TRUE
   Set Variable NATIVE_OVERWRITE_OLDER to TRUE
 end
+if Variable MYSQLPATCHREQUIRED Equals TRUE
+  Set Variable NATIVE_OVERWRITE_OLDER to TRUE
+end
  
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MariaDB_10\*.* to $TARGETDIR$\MariaDB, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MariaDB\*.* to $TARGETDIR$\MariaDB, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\HeidiSQL\HeidiSQL_Setup.exe to $TARGETDIR$\HeidiSQL, ignore files matching wildcard pattern(s) *.pdb;
  
+Comment: Change the setting back
 if Variable MYSQLUPGRADEREQUIRED Equals TRUE
+  Set Variable NATIVE_OVERWRITE_OLDER to FALSE
+end
+if Variable MYSQLPATCHREQUIRED Equals TRUE
   Set Variable NATIVE_OVERWRITE_OLDER to FALSE
 end
  

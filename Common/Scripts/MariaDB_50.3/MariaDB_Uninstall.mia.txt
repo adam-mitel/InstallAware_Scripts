@@ -1,0 +1,16 @@
+Comment: **************************************************************************************
+Comment: ****************************** MariaDB Specific Script  ******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running MariaDB_Uninstall
+end
+ 
+Run Program $WINSYSDIR$\net.exe STOP MySQL (WAIT)
+Run Program $WINSYSDIR$\SC.exe DELETE MySQL (WAIT)
+ 
+Set Variable HEIDIUNINSTALL to 
+Read Registry Key HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\HeidiSQL_is1\UninstallString into HEIDIUNINSTALL
+Convert to Short Path: HEIDIUNINSTALL 
+Run Program $HEIDIUNINSTALL$ /SILENT (WAIT)
+ 

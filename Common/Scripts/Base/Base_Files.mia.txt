@@ -9,6 +9,10 @@ end
 Comment: Clean up any potential existing files
 Delete Files $TARGETDIR$\InterfaceManager\*.dll (when installing and uninstalling)
 Delete Files $TARGETDIR$\InterfaceManager\*.exe (when installing and uninstalling)
+Delete Files $TARGETDIR$\InterfaceManager\*.bat (when installing and uninstalling)
+Delete Files $TARGETDIR$\InterfaceManager_SNMP\*.dll (when installing and uninstalling)
+Delete Files $TARGETDIR$\InterfaceManager_SNMP\*.exe (when installing and uninstalling)
+Delete Files $TARGETDIR$\InterfaceManager_SNMP\*.bat (when installing and uninstalling)
  
 Comment: Install the Base Files
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\tig2020\*.* to $TARGETDIR$, ignore files matching wildcard pattern(s) tiglicensegen.exe;messageemulator.exe;*.pdb;, include subfolders
@@ -18,6 +22,7 @@ Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuil
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\FilePrinter\*.* to $TARGETDIR$\FilePrinter, ignore files matching wildcard pattern(s) *.pdb;
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Graphics\*.* to $TARGETDIR$\Graphics, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\InterfaceManager\*.* to $TARGETDIR$\InterfaceManager, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\InterfaceManager_SNMP\*.* to $TARGETDIR$\InterfaceManager_SNMP, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Manuals\*.* to $TARGETDIR$\Manuals, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Utility\*.* to $TARGETDIR$\Utility, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Standalone\* to $TARGETDIR$, ignore files matching wildcard pattern(s) *.pdb;
@@ -136,7 +141,7 @@ if Variable TIGERILINK not Equals TRUE
 end
  
 Comment: Create the scheduled tasks to start interfaces
-Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Delete existing tasks$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Data Collection" /F$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Interfaces" /F$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Interface Manager" /F$NEWLINE$$NEWLINE$
+Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Delete existing tasks$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Data Collection" /F$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Interfaces" /F$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Interface Manager" /F$NEWLINE$SCHTASKS.exe /DELETE /TN "CG Start Interface Manager SNMP" /F$NEWLINE$$NEWLINE$
 if Variable TIGERILINK Equals TRUE
   Run Program SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
   Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Create tasks$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$$NEWLINE$
@@ -146,56 +151,64 @@ else
   Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Create tasks$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interfaces" /TR "$TARGETDIR$\IF_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Data Collection" /TR "$TARGETDIR$\Network\Batch\DC_Start.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$$NEWLINE$
 end
  
-Comment: Add IFM option to TASKBATTEXT
-Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Create IFM task if required$NEWLINE$SET STARTIFM=N$NEWLINE$SET /P STARTIFM=Do you want to start Interface Manager automatically at login (Y/[N])?$NEWLINE$IF /I "%STARTIFM%" EQU "Y" (SCHTASKS.exe /CREATE /TN "CG Start Interface Manager" /TR "$TARGETDIR$\InterfaceManager\TMSInterfaceManager.exe" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F /V1)$NEWLINE$$NEWLINE$
+Comment: Create InterfaceManager Batch Files, schedule as disabled and add to TASKBATTEXT
+Write into Text File $TARGETDIR$\InterfaceManager\IFM_START.bat from Value @ECHO OFF$NEWLINE$$PATHDRIVE$$NEWLINE$CD \tig2020\InterfaceManager$NEWLINE$START TMSInterfaceManager.exe$NEWLINE$ (at end of file)
+Write into Text File $TARGETDIR$\InterfaceManager_SNMP\IFM_START.bat from Value @ECHO OFF$NEWLINE$$PATHDRIVE$$NEWLINE$CD \tig2020\InterfaceManager_SNMP$NEWLINE$START TMSInterfaceManager.exe$NEWLINE$ (at end of file)
+Run Program SCHTASKS.exe /CREATE /TN "CG Start Interface Manager" /TR "$TARGETDIR$\InterfaceManager\IFM_START.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F
+Run Program SCHTASKS.exe /CREATE /TN "CG Start Interface Manager SNMP" /TR "$TARGETDIR$\InterfaceManager_SNMP\IFM_START.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F (WAIT)
+Run Program SCHTASKS.exe /CHANGE /TN "CG Start Interface Manager" /DISABLE
+Run Program SCHTASKS.exe /CHANGE /TN "CG Start Interface Manager SNMP" /DISABLE (WAIT)
+Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Create IFM tasks$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interface Manager" /TR "$TARGETDIR$\InterfaceManager\IFM_START.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$SCHTASKS.exe /CREATE /TN "CG Start Interface Manager SNMP" /TR "$TARGETDIR$\InterfaceManager_SNMP\IFM_START.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$SCHTASKS.exe /CHANGE /TN "CG Start Interface Manager" /DISABLE$NEWLINE$SCHTASKS.exe /CHANGE /TN "CG Start Interface Manager SNMP" /DISABLE$NEWLINE$$NEWLINE$
  
 Comment: Create the RunOnce Batch File which will run upgrade
 Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
 Write into Text File $TARGETDIR$\Temp\RunOnce.bat from Value @ECHO OFF$NEWLINE$$NEWLINE$ECHO *****************************************************$NEWLINE$ECHO.$NEWLINE$ECHO    Processing final Connected Guests setup routine$NEWLINE$ECHO.$NEWLINE$ECHO.$NEWLINE$ECHO.$NEWLINE$ECHO                PLEASE DO NOT INTERRUPT$NEWLINE$ECHO.$NEWLINE$ECHO *****************************************************$NEWLINE$$NEWLINE$ECHO Waiting for MySQL...$NEWLINE$:WAITFORMYSQL$NEWLINE$$NEWLINE$	SC query MySQL | find "4  RUNNING"$NEWLINE$	IF /I "%errorlevel%"=="0" GOTO :START$NEWLINE$	GOTO WAITFORMYSQL$NEWLINE$$NEWLINE$:START$NEWLINE$$NEWLINE$ECHO Running Upgrade...$NEWLINE$$TARGETDIR$\Upgrade.exe /A$NEWLINE$$NEWLINE$ECHO Running Tasks...$NEWLINE$SCHTASKS /RUN /TN "CG Start Data Collection"$NEWLINE$SCHTASKS /RUN /TN "CG Start Interfaces"$NEWLINE$$NEWLINE$ECHO Tidying up files...$NEWLINE$DEL C:\TTInstall_MACAddress.txt$NEWLINE$DEL $TARGETDIR$\Temp\RunOnce.bat$NEWLINE$ (at start of file)
 Write Registry Key HKLM\Software\Microsoft\Windows\CurrentVersion\RunOnce\CGRunOnce, $TARGETDIR$\Temp\RunOnce.bat
  
-if Variable OSTYPE not Equals EMBEDDED
-  Comment: Install x86 Visual C++ Runtimes and then delete
-  Set Variable PROGRESSTEXT to iCharge: Installing x86 Visual Studio C++ 2005-2017, this may take a minute...
-  Run Program $TARGETDIR$\Temp\vcredist_x86_2005.exe /Q (WAIT)
-  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
-  Set Variable PROGRESS to 20
-   
-  Run Program $TARGETDIR$\Temp\vcredist_x86_2008.exe /q (WAIT)
-  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
-  Set Variable PROGRESS to 40
-   
-  Run Program $TARGETDIR$\Temp\vcredist_x86_2012.exe /q (WAIT)
-  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
-  Set Variable PROGRESS to 60
-   
-  Run Program $TARGETDIR$\Temp\vcredist_x86_2013.exe /q (WAIT)
-  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
-  Set Variable PROGRESS to 80
-   
-  Run Program $TARGETDIR$\Temp\vcredist_x86_2017.exe /q (WAIT)
-  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
-  Set Variable PROGRESS to 100
-   
-  if Variable OS64 Equals TRUE
-    Comment: Install x64 Visual C++ Runtimes and then delete
-    Set Variable PROGRESSTEXT to iCharge: Installing x64 Visual Studio C++ 2008-2017, this may take a minute...
+if Variable SKIPALL not Equals TRUE
+  if Variable OSTYPE not Equals EMBEDDED
+    Comment: Install x86 Visual C++ Runtimes and then delete
+    Set Variable PROGRESSTEXT to iCharge: Installing x86 Visual Studio C++ 2005-2017, this may take a minute...
+    Run Program $TARGETDIR$\Temp\vcredist_x86_2005.exe /Q (WAIT)
+    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    Set Variable PROGRESS to 20
      
-    Run Program $TARGETDIR$\Temp\vcredist_x64_2008.exe /q (WAIT)
+    Run Program $TARGETDIR$\Temp\vcredist_x86_2008.exe /q (WAIT)
     Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
     Set Variable PROGRESS to 40
      
-    Run Program $TARGETDIR$\Temp\vcredist_x64_2012.exe /q (WAIT)
+    Run Program $TARGETDIR$\Temp\vcredist_x86_2012.exe /q (WAIT)
     Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
     Set Variable PROGRESS to 60
      
-    Run Program $TARGETDIR$\Temp\vcredist_x64_2013.exe /q (WAIT)
+    Run Program $TARGETDIR$\Temp\vcredist_x86_2013.exe /q (WAIT)
     Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
     Set Variable PROGRESS to 80
      
-    Run Program $TARGETDIR$\Temp\vcredist_x64_2017.exe /q (WAIT)
+    Run Program $TARGETDIR$\Temp\vcredist_x86_2017.exe /q (WAIT)
     Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
     Set Variable PROGRESS to 100
+     
+    if Variable OS64 Equals TRUE
+      Comment: Install x64 Visual C++ Runtimes and then delete
+      Set Variable PROGRESSTEXT to iCharge: Installing x64 Visual Studio C++ 2008-2017, this may take a minute...
+       
+      Run Program $TARGETDIR$\Temp\vcredist_x64_2008.exe /q (WAIT)
+      Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+      Set Variable PROGRESS to 40
+       
+      Run Program $TARGETDIR$\Temp\vcredist_x64_2012.exe /q (WAIT)
+      Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+      Set Variable PROGRESS to 60
+       
+      Run Program $TARGETDIR$\Temp\vcredist_x64_2013.exe /q (WAIT)
+      Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+      Set Variable PROGRESS to 80
+       
+      Run Program $TARGETDIR$\Temp\vcredist_x64_2017.exe /q (WAIT)
+      Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+      Set Variable PROGRESS to 100
+    end
   end
 end
  
