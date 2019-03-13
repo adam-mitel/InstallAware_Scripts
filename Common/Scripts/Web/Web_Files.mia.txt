@@ -42,3 +42,7 @@ Delete Files $DESKTOPDIR$\TigerTMS iCharge.lnk (when installing)
 Create Shortcut $SHORTCUTFOLDER$\iCharge to C:\Program Files\Internet Explorer\iexplore.exe
 Create Shortcut $DESKTOPDIR$\iCharge to C:\Program Files\Internet Explorer\iexplore.exe
  
+if Variable PRODUCTBRAND Equals MITEL
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\MiGuest\*.* to $TARGETDIR$\Web\MiGuest, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+end
+ 

@@ -169,45 +169,43 @@ if Variable SKIPALL not Equals TRUE
   if Variable OSTYPE not Equals EMBEDDED
     Comment: Install x86 Visual C++ Runtimes and then delete
     Set Variable PROGRESSTEXT to iCharge: Installing x86 Visual Studio C++ 2005-2017, this may take a minute...
-    Run Program $TARGETDIR$\Temp\vcredist_x86_2005.exe /Q (WAIT)
-    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
-    Set Variable PROGRESS to 20
      
     Run Program $TARGETDIR$\Temp\vcredist_x86_2008.exe /q (WAIT)
-    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    Set Variable PROGRESS to 20
+     
+    Run Program $TARGETDIR$\Temp\vcredist_x86_2010.exe /q /norestart (WAIT)
     Set Variable PROGRESS to 40
      
-    Run Program $TARGETDIR$\Temp\vcredist_x86_2012.exe /q (WAIT)
-    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    Run Program $TARGETDIR$\Temp\vcredist_x86_2012.exe /quiet /norestart (WAIT)
     Set Variable PROGRESS to 60
      
-    Run Program $TARGETDIR$\Temp\vcredist_x86_2013.exe /q (WAIT)
-    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    Run Program $TARGETDIR$\Temp\vcredist_x86_2013.exe /quiet /norestart (WAIT)
     Set Variable PROGRESS to 80
      
-    Run Program $TARGETDIR$\Temp\vcredist_x86_2017.exe /q (WAIT)
-    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+    Run Program $TARGETDIR$\Temp\vcredist_x86_2017.exe /quiet /norestart (WAIT)
     Set Variable PROGRESS to 100
      
+    Run Program CMD.exe /C DEL /Q $TARGETDIR$\Temp\vcredist_x86* (WAIT)
     if Variable OS64 Equals TRUE
       Comment: Install x64 Visual C++ Runtimes and then delete
       Set Variable PROGRESSTEXT to iCharge: Installing x64 Visual Studio C++ 2008-2017, this may take a minute...
        
       Run Program $TARGETDIR$\Temp\vcredist_x64_2008.exe /q (WAIT)
-      Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+      Set Variable PROGRESS to 20
+       
+      Run Program $TARGETDIR$\Temp\vcredist_x64_2010.exe /q /norestart (WAIT)
       Set Variable PROGRESS to 40
        
-      Run Program $TARGETDIR$\Temp\vcredist_x64_2012.exe /q (WAIT)
-      Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+      Run Program $TARGETDIR$\Temp\vcredist_x64_2012.exe /quiet /norestart (WAIT)
       Set Variable PROGRESS to 60
        
-      Run Program $TARGETDIR$\Temp\vcredist_x64_2013.exe /q (WAIT)
-      Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+      Run Program $TARGETDIR$\Temp\vcredist_x64_2013.exe /quiet /norestart (WAIT)
       Set Variable PROGRESS to 80
        
-      Run Program $TARGETDIR$\Temp\vcredist_x64_2017.exe /q (WAIT)
-      Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+      Run Program $TARGETDIR$\Temp\vcredist_x64_2017.exe /quiet /norestart (WAIT)
       Set Variable PROGRESS to 100
+       
+      Run Program CMD.exe /C DEL /Q $TARGETDIR$\Temp\vcredist_x64* (WAIT)
     end
   end
 end

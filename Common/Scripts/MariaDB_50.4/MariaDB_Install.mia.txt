@@ -1,0 +1,99 @@
+Comment: **************************************************************************************
+Comment: ****************************** MariaDB Specific Script  ******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running MariaDB_Install
+end
+ 
+Comment: If the existing version is less than 50.0.0.0 then we need to upgrade from MySQL v4 to v5
+if Variable ALREADYINSTALLEDVERSION not Greater Than (Version) 50.0.0.0
+  Comment: Copy files to MariaDB and then rename MySQL to MySQL_V4_Backup
+  Set Variable PROGRESSTEXT to MariaDB: Copying existing MySQL data
+  Recursively Delete Files $TARGETDIR$\MySQL\data\auditlog\*
+  Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+  Copy Local Files $TARGETDIR$\MySQL\data\* to $TARGETDIR$\MariaDB\data\* (include subfolders)
+  Run Program CMD.exe /C REN MySQL MySQL_V4_Backup, startup in folder $TARGETDIR$ (WAIT)
+  Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
+end
+ 
+Comment: Set the INI path variables
+Set Variable MYSQLDIR to $TARGETDIR$\MariaDB\
+Replace \\ with \ in variable MYSQLDIR
+Replace \ with / in variable MYSQLDIR
+Edit INI File $TARGETDIR$\MariaDB\data\my.ini, [mysqld] datadir=$MYSQLDIR$data
+Edit INI File $TARGETDIR$\MariaDB\data\my.ini, [mysqld] tmpdir=$MYSQLDIR$temp
+Edit INI File $TARGETDIR$\MariaDB\data\my.ini, [mysqld] plugin_dir=$MYSQLDIR$lib/plugin
+Edit INI File $TARGETDIR$\MariaDB\data\my.ini, [mysqld] mitel_key_management_filename=$MYSQLDIR$data/keys.enc
+ 
+Comment: Install the service
+Set Variable PROGRESSTEXT to MariaDB: Installing MariaDB Service
+Run Program $WINSYSDIR$\sc.exe DELETE "MySQL" (WAIT)
+Run Program $WINSYSDIR$\sc.exe CREATE "MySQL" start= auto binPath= "\"$TARGETDIR$\MariaDB\bin\mysqld.exe\" \"--defaults-file=$TARGETDIR$\MariaDB\Data\my.ini\" MySQL" (WAIT)
+Set Variable PROGRESS to 60
+ 
+Comment: If this is an upgrade from pre-50.4 we need to create the encryption keys
+if Variable ALREADYINSTALLEDVERSION not Greater Than (Version) 50.4.0.0
+  Comment: Install OpenSSL
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\OpenSSL\*.* to $TARGETDIR$\Temp\OpenSSL, ignore files matching wildcard pattern(s) *.pdb;
+  Comment: Create the 3 keys
+  Run Program $TARGETDIR$\Temp\OpenSSL\CreateKeys.bat , startup in folder $TARGETDIR$\Temp\OpenSSL (WAIT)
+  Comment: Move the key to MariaDB\data
+  Move Local Files $TARGETDIR$\Temp\OpenSSL\keys.enc to $TARGETDIR$\MariaDB\data\
+  Comment: Delete OpenSSL files
+  Run Program CMD.exe /C DEL /Q /F $TARGETDIR$\Temp\OpenSSL (WAIT)
+end
+Comment: If it's new we also need to set up the encryption
+if Variable ALREADYINSTALLED Equals FALSE
+  Comment: Install OpenSSL
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\OpenSSL\*.* to $TARGETDIR$\Temp\OpenSSL, ignore files matching wildcard pattern(s) *.pdb;
+  Comment: Create the keys
+  Run Program $TARGETDIR$\Temp\OpenSSL\CreateKeys.bat , startup in folder $TARGETDIR$\Temp\OpenSSL (WAIT)
+  Comment: Move the key to MariaDB\data
+  Move Local Files $TARGETDIR$\Temp\OpenSSL\keys.enc to $TARGETDIR$\MariaDB\data\
+  Comment: Delete OpenSSL files
+  Run Program CMD.exe /C DEL /Q /F $TARGETDIR$\Temp\OpenSSL (WAIT)
+end
+ 
+Comment: Start the service
+Set Variable PROGRESSTEXT to MariaDB: Starting MariaDB Service
+Run Program $WINSYSDIR$\net.exe START MySQL (WAIT)
+Run Program $WINSYSDIR$\timeout.exe 10 (WAIT)
+Set Variable PROGRESS to 70
+ 
+Comment: Configure the MySQL Users and Privilages - Install File here so it is present on upgrades as well
+Set Variable PROGRESSTEXT to MariaDB: Configuring MySQL Users
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MySQL_Users.SQL to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
+Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\MySQL_Users.SQL" (WAIT)
+Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+ 
+Comment: If required upgrade the MySQL tables
+if Variable MYSQLUPGRADEREQUIRED Equals TRUE
+  Set Variable PROGRESSTEXT to MariaDB: Upgrading existing database tables to the current version
+  Run Program $TARGETDIR$\MariaDB\bin\mysql_upgrade.exe --force -h127.0.0.1 -uroot -pR3gI7iG3r, startup in folder $TARGETDIR$\MariaDB\bin (WAIT)
+  Set Variable PROGRESS to 80
+end
+ 
+Comment: Configure the MySQL Procedures - Install File here so it is present on upgrades as well
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MySQL_Procedures.SQL to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
+Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\MySQL_Procedures.SQL" (WAIT)
+if Variable DEBUGMODE not Equals TRUE
+  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+end
+ 
+Comment: Run the MySQL_Execute.SQL to configure anything else that needs doing
+Set Variable PROGRESSTEXT to MariaDB: Converting Storage Engine for all database tables. This could take a while...
+Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r -e "SELECT CONCAT('ALTER TABLE ', CONCAT(CONCAT(TABLE_SCHEMA, '.'), TABLE_NAME), ' ENGINE=Aria;') FROM information_schema.TABLES WHERE `ENGINE` LIKE 'MyISAM' AND TABLE_SCHEMA <> 'information_schema' AND TABLE_SCHEMA <> 'performance_schema';" >"$TARGETDIR$\Temp\MySQL_Convert.sql" (WAIT)
+Run Program $WINSYSDIR$\timeout.exe 2 (WAIT)
+Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r -f < "$TARGETDIR$\Temp\MySQL_Convert.SQL" (WAIT)
+if Variable DEBUGMODE not Equals TRUE
+  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+end
+ 
+Comment: Install HeidiSQL
+Set Variable PROGRESSTEXT to MariaDB: Installing HeidiSQL
+Run Program $TARGETDIR$\HeidiSQL\HeidiSQL_Setup.exe /SILENT (WAIT)
+Set Variable PROGRESS to 100
+Write Registry Key HKCU\Software\HeidiSQL\GroupTreeObjects, 1
+Write Registry Key HKCU\Software\HeidiSQL\DisplayBLOBsAsText, 1
+ 

@@ -85,11 +85,6 @@ end
 if Variable CMDLINE Contains -SKIPDISM
   Set Variable SKIPDISM to TRUE
 end
-if Variable CMDLINE Contains -SKIPALL
-  Set Variable SKIPALL to TRUE
-  Set Variable SKIPSYSTEMCHECKS to TRUE
-  Set Variable SKIPDISM to TRUE
-end
 if Variable CMDLINE Contains -FORCEALLOPTIONS
   Set Variable FORCEALLOPTIONS to TRUE
 end
@@ -127,9 +122,9 @@ end
  
 Comment: Begin system checks unless we are meant to skip
 if Variable SKIPSYSTEMCHECKS not Equals TRUE
-  Comment: Check the OS is correct
+  Comment: Check the OS is atleast 7/2008
   if Variable KERNEL not Greater Than (Version) 6.0
-    MessageBox: $TITLE$ Setup Error, This product requires the below Operating Systems:$NEWLINE$$NEWLINE$Windows 7$NEWLINE$Windows 10$NEWLINE$Windows Server 2012 R2$NEWLINE$Windows Server 2016$NEWLINE$Windows Server 2019$NEWLINE$$NEWLINE$Setup cannot continue.
+    MessageBox: $TITLE$ Setup Error, This product requires the below Operating System or newer:$NEWLINE$$NEWLINE$Client OS: Windows 7$NEWLINE$Server OS: Windows Server 2008 R2$NEWLINE$$NEWLINE$Setup cannot continue.
     Terminate Installation
   end
    
@@ -165,13 +160,6 @@ if Variable SKIPSYSTEMCHECKS not Equals TRUE
     end
   end
 end
- 
-Comment: ENABLE FOR V6 50.4
-Comment: Comment: Even if Skip System Checks is on, we can only run on x64
-Comment: if Variable OS64 not Equals TRUE
-Comment: MessageBox: $TITLE$ Setup Error, This product requires the Operating System to be 64-bit.
-Comment: Terminate Installation
-Comment: end
  
 Comment: Terminate the installation if any of the pre-requisits are not installed
 if Variable INITERROR Equals TRUE
@@ -289,9 +277,8 @@ end
 [END REGION]
  
 [DEFINE REGION: Setup User Interview]
-Set Variable TARGETDIR to c:\tig2020
-Set Variable TARGETDRIVE to c:\
-Set Variable PATHDRIVE to c:
+Set Variable TARGETDIR to C:\tig2020
+Set Variable TARGETDRIVE to C:\
  
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Local Config into CONFIGCHECK
 if Variable CONFIGCHECK not Contains NO$
@@ -304,20 +291,18 @@ if Variable CONFIGCHECK not Contains NO$
   Comment: This registry string is only present in installations newer than 50.0.0.0
   Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\InstallerVersion into REGCHECK
   if Variable REGCHECK Contains NO$
+    Set Variable MYSQLUPGRADEREQUIRED to TRUE
     Set Variable ALREADYINSTALLEDVERSION to 4.0.0.0
   else
     Set Variable ALREADYINSTALLEDVERSION to $REGCHECK$
   end
 end
  
-Comment: Check if we need to install a major MySQL update (file and procedure)
-if Variable ALREADYINSTALLED not Greater Than (Version) 50.4.1.0
-  Set Variable MYSQLUPGRADEREQUIRED to TRUE
-end
- 
-Comment: Debug to see if we need to upgrade
-if Variable DEBUGMODE Equals TRUE
-  MessageBox: $TITLE$ DEBUG, Installed Version: [$ALREADYINSTALLEDVERSION$]$NEWLINE$MySQL Update: [$MYSQLUPGRADEREQUIRED$]
+Comment: Check if we need to install a MySQL Patch
+if Variable ALREADYINSTALLEDVERSION not Greater Than (Version) 50.3.1.0
+  if Variable ALREADYINSTALLEDVERSION Greater Than (Version) 4.999.999.999
+    Set Variable MYSQLPATCHREQUIRED to TRUE
+  end
 end
  
 if Variable MAINTENANCE Equals TRUE
@@ -351,8 +336,6 @@ if Variable ALREADYINSTALLED not Equals TRUE
   end
   Set Variable TARGETDIR to $TARGETDRIVE$\tig2020
   Replace \\ with \ in variable TARGETDIR
-  Set Variable PATHDIR to $TARGETDRIVE$
-  Replace \ with  in variable PATHDIR
 else
   MessageBox: $TITLE$ Setup, A previous installation has been found and will be upgraded.$NEWLINE$$NEWLINE$Before the upgrade is completed, an Engineering Backup will be placed in the root of $OSDIR$.
 end
@@ -413,13 +396,18 @@ if Variable PRODUCTBRAND not Equals MITEL
   Define Component: Base\iCharge/iLink\Interface Connectors\Panasonic KX-TDA/TDE
 end
 Define Component: Base\iCharge/iLink\Interface Connectors\PAR Springer-Miller
+Comment: Define HotelMGR Components if it's a Server OS
+if Variable OSTYPE Equals SERVER
+end
 if Variable INSTALLHOTELMGR Equals TRUE
   Define Component: Base\HotelMGR
 end
 label: Custom Setup
-Comment: If iLink / iCharge is not selected, skip the components tree
+Comment: If only HotelMGR is selected, skip the Components Tree
 if Variable INSTALLICHARGE Equals FALSE
-  GoTo Label: HotelMGR Template Wizard
+  if Variable INSTALLHOTELMGR Equals TRUE
+    GoTo Label: HotelMGR Template Wizard
+  end
 end
 Display Dialog: componentstree, wait for dialog to return (modal)
 Comment: Check NEXT was pressed
@@ -767,7 +755,6 @@ else
     Run Program $WINSYSDIR$\net.exe START "MySQL" (WAIT)
     Set Variable PROGRESSTEXT to Creating an Engineering Backup to $OSDIR$...
     Run Program $TARGETDIR$\Utility\tigbackup.exe -ef$TARGETDIR$ -et$OSDIR$ (WAIT)
-    Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysqldump.exe -h127.0.0.1 -uroot -pR3gI7iG3r --no-data --no-create-info --routines --triggers --events --all-databases > $TARGETDIR$\MySQL_Existing_Procedures.sql (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "MySQL" (WAIT)
      
      
@@ -1118,6 +1105,12 @@ else
               Include Script: MariaDB_Install
               Set Variable PROGRESS to 100
             end
+            if Variable MYSQLPATCHREQUIRED Equals TRUE
+              Comment: A patch is required which means we need to reinstall the service
+              Set Variable PROGRESSTEXT to MariaDB: Installing
+              Include Script: MariaDB_Install
+              Set Variable PROGRESS to 100
+            end
             if Variable INSTALLED_MARIADB Equals 1
               Comment: Skip if already installed
               Run Program $WINSYSDIR$\net.exe START "MySQL" (WAIT)
@@ -1155,10 +1148,10 @@ else
          
         Get Component Base\iCharge/iLink\Web Front End Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          Comment: if Variable INSTALLED_SILVERLIGHT Equals 1
-          Comment: Comment: Skip if already installed
-          Comment: GoTo Label: Install EvMux
-          Comment: end
+          if Variable INSTALLED_SILVERLIGHT Equals 1
+            Comment: Skip if already installed
+            GoTo Label: Install EvMux
+          end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to Web Front End: Installing
           Include Script: Web_Install

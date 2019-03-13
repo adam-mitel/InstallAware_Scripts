@@ -42,3 +42,32 @@ end
 Comment: Grant permissions to tig2020 for the IIS Application Pool
 Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\iCharge":(OI)(CI)F
  
+Comment: If it's Mitel - install MiGuest portal
+if Variable PRODUCTBRAND Equals MITEL
+  Comment: Delete potential existing MiGuest portal
+  Delete Virtual Folder "MiGuest" in IIS Site #$WEBSITEINDEXVAR$
+  if Variable OS64 Equals TRUE
+    Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: MiGuest (WAIT)
+  else
+    Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: MiGuest (WAIT)
+  end
+   
+  Create Virtual Folder "MiGuest" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\MiGuest
+  Comment: If Windows is x64, we need to set the application pool to 32 bit mode and other settings
+  if Variable OS64 Equals TRUE
+    Set Variable PROGRESSTEXT to Web Front End: Setting Application Pool to x86 Mode...
+    Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "MiGuest" /enable32BitAppOnWin64:true (WAIT)
+    Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "MiGuest" -processmodel.loaduserprofile:"false" (WAIT)
+  else
+    Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "MiGuest" -processmodel.loaduserprofile:"false" (WAIT)
+  end
+   
+  if Variable MARIASERVER not Equals 
+    Comment: If MariaDB isn't installed change the Web.config to point at the new IP Address
+    Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "value=\"server=localhost;Port=3306" --replace "value=\"server=MARIASERVER$;Port=3306" --dir "$TARGETDIR$\Web\MiGuest" --fileMask="Web.config" (WAIT)
+  end
+   
+  Comment: Grant permissions to tig2020 for the IIS Application Pool
+  Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\MiGuest":(OI)(CI)F
+end
+ 
