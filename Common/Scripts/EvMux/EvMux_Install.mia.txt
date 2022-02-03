@@ -8,7 +8,8 @@ end
  
 Run Program $WINSYSDIR$\SC.exe DELETE "TigEvMux" (WAIT)
 Run Program $TARGETDIR$\evmux.exe /i (WAIT)
-Run Program $WINSYSDIR$\SC.exe CREATE "TigEvMux" start= auto binPath= $TARGETDIR$\evmux.exe (WAIT)
+Run Program $WINSYSDIR$\SC.exe DELETE "TigEvMux" (WAIT)
+Run Program $WINSYSDIR$\SC.exe CREATE "TigEvMux" start= delayed-auto binPath= $TARGETDIR$\evmux.exe (WAIT)
 Run Program $WINSYSDIR$\SC.exe FAILURE "TigEvMux" reset= 0 actions= restart/60000 (WAIT)
  
 if Variable ALREADYINSTALLED Equals TRUE

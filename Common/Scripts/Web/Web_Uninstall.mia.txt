@@ -6,7 +6,33 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running Web_Uninstall
 end
  
-Comment: Remove the IIS Web Site
+Comment: Remove any iCharge and iChargeUno instance
 Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
 Delete Virtual Folder "iCharge" in IIS Site #$WEBSITEINDEXVAR$
+Delete Virtual Folder "iChargeUno" in IIS Site #$WEBSITEINDEXVAR$
+if Variable OS64 Equals TRUE
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: iCharge (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: iChargeUno (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: iCharge (WAIT)
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: iChargeUno (WAIT)
+end
+ 
+Comment: Remove any Dashboard instance
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Delete Virtual Folder "Dashboard" in IIS Site #$WEBSITEINDEXVAR$
+if Variable OS64 Equals TRUE
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: Dashboard (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: Dashboard (WAIT)
+end
+ 
+Comment: Remove any API instance
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Delete Virtual Folder "API" in IIS Site #$WEBSITEINDEXVAR$
+if Variable OS64 Equals TRUE
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: API (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: API (WAIT)
+end
  

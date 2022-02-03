@@ -79,8 +79,8 @@ if Variable SELECTED Equals FALSE
   Comment: This server will not have MariaDB installed on it
   Edit INI File $TARGETDIR$\config\tigersystem.ini, [Tiger 2000] HostName=$MARIASERVER$
    
-  Set Variable PROGRESSTEXT to iCharge: Licensing...
-  Run Program $TARGETDIR$\TigLicenseMan.exe  (WAIT)
+  Set Variable PROGRESSTEXT to iCharge: Installing system services...
+  Run Program $TARGETDIR$\Temp\CloudLicenseClient.exe /exenoui /qn (WAIT)
    
   Set Variable PROGRESSTEXT to iCharge: Setting up Data Collection and Interfaces...
   Run Program $TARGETDIR$\ifaceconfig.exe /h (WAIT)
@@ -90,8 +90,8 @@ else
   Run Program $TARGETDIR$\upgrade.exe /A /CR (WAIT)
   Set Variable PROGRESS to 85
    
-  Set Variable PROGRESSTEXT to iCharge: Running the License Manager...
-  Run Program $TARGETDIR$\TigLicenseMan.exe  (WAIT)
+  Set Variable PROGRESSTEXT to iCharge: Installing System Services...
+  Run Program $TARGETDIR$\Temp\CloudLicenseClient.exe /exenoui /qn (WAIT)
    
   Comment: Check if it is a new installation
   if Variable ALREADYINSTALLED not Equals TRUE
@@ -105,6 +105,9 @@ else
     Set Variable PROGRESSTEXT to iCharge: Setting up Database Defaults...
     Run Program $TARGETDIR$\TigHotelSetup.exe /A /-F /N="Hotel" (WAIT)
     Set Variable PROGRESS to 90
+     
+    Set Variable PROGRESSTEXT to iCharge: Running Upgrade...
+    Run Program $TARGETDIR$\upgrade.exe /A (WAIT)
   end
    
   Comment: Only if it's a new installation...
@@ -124,62 +127,40 @@ else
     Comment: Create the SQL file
     Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
     if Variable MACADDRESS not Equals 
-      Write into Text File $TARGETDIR$\Temp\Backup.SQL from Value INSERT INTO tigersys.crontab (workstation, description, duedate, duetime, enabled, frequnit, freqqty, freqtimeofday, freqlasttod, freqdayofweek, freqdayofmonth, periodunit, periodqty, perioddayofweek, perioddayofmonth, command, parameters, asynchronous) VALUES ('$MACADDRESS$','Daily Backup','2000-01-01','04:35:00',1,3,1,'04:35:00',0,0,1,0,1,0,1,'$BACKUPBATDIR$','',0); (at end of file)
+      Write into Text File $TARGETDIR$\Temp\Backup.SQL from Value INSERT INTO tigersys.crontab (workstation, description, duedate, duetime, enabled, frequnit, freqqty, freqtimeofday, freqlasttod, freqdayofweek, freqdayofmonth, periodunit, periodqty, perioddayofweek, perioddayofmonth, command, parameters, asynchronous) VALUES ('$MACADDRESS$','Daily Backup', CURRENT_DATE(),'04:35:00',1,3,1,'04:35:00',0,0,1,0,1,0,1,'$BACKUPBATDIR$','',0); (at end of file)
     else
-      Write into Text File $TARGETDIR$\Temp\Backup.SQL from Value INSERT INTO tigersys.crontab (workstation, description, duedate, duetime, enabled, frequnit, freqqty, freqtimeofday, freqlasttod, freqdayofweek, freqdayofmonth, periodunit, periodqty, perioddayofweek, perioddayofmonth, command, parameters, asynchronous) VALUES ((SELECT inst_id FROM tigersys.instalns ORDER BY ID DESC LIMIT 1), 'Daily Backup','2000-01-01','04:35:00',1,3,1,'04:35:00',0,0,1,0,1,0,1,'$BACKUPBATDIR$','',0); (at end of file)
+      Write into Text File $TARGETDIR$\Temp\Backup.SQL from Value INSERT INTO tigersys.crontab (workstation, description, duedate, duetime, enabled, frequnit, freqqty, freqtimeofday, freqlasttod, freqdayofweek, freqdayofmonth, periodunit, periodqty, perioddayofweek, perioddayofmonth, command, parameters, asynchronous) VALUES ((SELECT inst_id FROM tigersys.instalns ORDER BY ID DESC LIMIT 1), 'Daily Backup', CURRENT_DATE(),'04:35:00',1,3,1,'04:35:00',0,0,1,0,1,0,1,'$BACKUPBATDIR$','',0); (at end of file)
     end
     Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h$MYSQLSERVER$ -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\Backup.SQL" (WAIT)
     Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
      
-    Comment: Create License Expiry Task
-    if Variable DEPLOYLICENCEBAT Equals TRUE
-      Set Variable LICENSEBATPATH to $TARGETDIR$\Network\Batch\LB\LB.bat
-      Replace \\ with \ in variable LICENSEBATPATH
-      Replace \\ with \ in variable LICENSEBATPATH
-      Replace \ with \\ in variable LICENSEBATPATH
-      if Variable MACADDRESS not Equals 
-        Write into Text File $TARGETDIR$\Temp\LB.SQL from Value INSERT INTO tigersys.crontab (workstation, description, duedate, duetime, enabled, frequnit, freqqty, freqtimeofday, freqlasttod, freqdayofweek, freqdayofmonth, periodunit, periodqty, perioddayofweek, perioddayofmonth, command, parameters, asynchronous) VALUES ('$MACADDRESS$','Health Check','2000-01-01','04:40:00',0,3,1,'04:40:00',0,0,1,0,1,0,1,'$LICENSEBATPATH$','',0); (at end of file)
-      end
-      Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h$MYSQLSERVER$ -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\LB.SQL" (WAIT)
-      Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
-    end
-     
-    Comment: If there is a MAC Address set MACPrefer
-    if Variable MACADDRESS not Equals 
-      Run Program $TARGETDIR$\Temp\fnr.exe --cl --find ";MACPrefer=00-00-00-00-00-00" --replace "MACPrefer=$MACADDRESS$" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
-      Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "ApplyWMI=0" --replace "ApplyWMI=1" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
-    end
-    if Variable TIGERILINK Equals TRUE
-      Comment: Set the HI INI files to not read CallRecords
-      Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "ReadCallRecords=1" --replace "ReadCallRecords=0" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
-    end
   end
 end
  
 Comment: Do the below for all installations
-Check Registry Key HKLM\SOFTWARE\Microsoft\Silverlight\Version into REGCHECK
-if Variable REGCHECK Equals NO$KEY
-  Set Variable SILVERLIGHTVERSION to 0.0.0.0
-else
-  Set Variable SILVERLIGHTVERSION to $REGCHECK$
-end
  
-if Variable SILVERLIGHTVERSION not Greater Than (Version) 5.1.10411.0
-  Set Variable PROGRESSTEXT to iCharge: Installing Microsoft Silverlight...
-  Run Program $TARGETDIR$\Temp\Silverlight.exe /q (WAIT)
+Comment: Configure the HI Scripts
+Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "FileName=D:\\" --replace "FileName=$TARGETDRIVE$" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
+if Variable MACADDRESS not Equals 
+  Run Program $TARGETDIR$\Temp\fnr.exe --cl --find ";MACPrefer=00-00-00-00-00-00" --replace "MACPrefer=$MACADDRESS$" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
+  Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "ApplyWMI=0" --replace "ApplyWMI=1" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
 end
-Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+if Variable TIGERILINK Equals TRUE
+  Comment: Set the HI INI files to not read CallRecords
+  Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "ReadCallRecords=1" --replace "ReadCallRecords=0" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
+end
  
 Comment: These DLL's need to be registered by the 32 bit Regsvr
 Set Variable PROGRESSTEXT to iCharge: Registering DLL's...
 Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\messagemaster.dll (WAIT)
-Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\InterfaceManager\SSRTigerps.dll (WAIT)
-Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\InterfaceManager\SSRclientps.dll (WAIT)
-Run Program $TARGETDIR$\InterfaceManager\SSRTiger.exe /Regserver (WAIT)
+Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\iLinkManager\SSRTigerps.dll (WAIT)
+Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\iLinkManager\SSRclientps.dll (WAIT)
+Run Program $TARGETDIR$\iLinkManager\SSRTiger.exe /Regserver (WAIT)
 Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\chilkatssh.dll (WAIT)
-Set Variable PROGRESS to 95
  
-Comment: Update any legacy Configurations with the new username
-Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "Uid=tigerengr" --replace "Uid=cgengineer" --dir "$TARGETDIR$\InterfaceManager" --fileMask="IFConfig.xml" (WAIT)
-Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "Uid=tigerengr" --replace "Uid=cgengineer" --dir "$TARGETDIR$" --fileMask="*.config" --includeSubDirectories (WAIT)
+ 
+Comment: Install Services
+Run .NET Installer Class $TARGETDIR$\iChargeWinService\iChargeWinService.exe
+Run Program $WINSYSDIR$\sc.exe CONFIG "iChargeWinService" Start= auto (WAIT)
+Run Program $WINSYSDIR$\sc.exe FAILURE "iChargeWinService" reset= 0 actions= restart/60000 (WAIT)
  

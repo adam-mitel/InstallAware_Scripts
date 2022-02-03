@@ -52,6 +52,7 @@ Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS SIP UDP" (
 Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS HI.exe" (WAIT)
 Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS EvMux.exe" (WAIT)
 Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS FTP Reports" (WAIT)
+Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS iLinkManager" (WAIT)
 Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests HTTP/HTTPS for IIS" (WAIT)
 Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests MySQL" (WAIT)
 Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests Interfaces" (WAIT)
@@ -63,15 +64,15 @@ Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests DC
 Run Program NETSH.exe advfirewall firewall delete rule name="Connected Guests InterfaceManager" (WAIT)
  
 Comment: Add/readd Windows Firewall exceptions
-Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests HTTP/HTTPS for IIS" dir=in action=allow protocol=TCP localport=80,443 (WAIT)
-Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests MySQL" dir=in action=allow protocol=TCP localport=3306 (WAIT)
-Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests Interfaces" dir=in action=allow protocol=TCP localport=21,22,1900-1910,2561,3000-3010,5000-5099,9000 (WAIT)
-Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests SIP UDP" dir=in action=allow protocol=UDP localport=5060 (WAIT)
-Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests HI.exe" dir=in action=allow program="$TARGETDIR$\HI.exe" enable=yes (WAIT)
-Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests EvMux.exe" dir=in action=allow program="$TARGETDIR$\evmux.exe" enable=yes (WAIT)
-Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests FTP Reports" dir=in action=allow program="$TARGETDIR$\ftpd_srv.exe" enable=yes (WAIT)
-Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests DC CallManager" dir=in action=allow program="$TARGETDIR$\dc_callmanager.exe" enable=yes (WAIT)
-Run Program NETSH.exe advfirewall firewall add rule name="Connected Guests InterfaceManager" dir=in action=allow program="$TARGETDIR$\InterfaceManager\TMSInterfaceManager.exe" enable=yes (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS HTTP/HTTPS for IIS" dir=in action=allow protocol=TCP localport=80,443 (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS MySQL" dir=in action=allow protocol=TCP localport=3306 (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS Interfaces" dir=in action=allow protocol=TCP localport=21,22,1900-1910,2561,3000-3010,5000-5099,9000 (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS SIP UDP" dir=in action=allow protocol=UDP localport=5060 (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS HI.exe" dir=in action=allow program="$TARGETDIR$\HI.exe" enable=yes (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS EvMux.exe" dir=in action=allow program="$TARGETDIR$\evmux.exe" enable=yes (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS FTP Reports" dir=in action=allow program="$TARGETDIR$\ftpd_srv.exe" enable=yes (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS DC CallManager" dir=in action=allow program="$TARGETDIR$\dc_callmanager.exe" enable=yes (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS iLinkManager" dir=in action=allow program="$TARGETDIR$\iLinkManager\iLinkManager.exe" enable=yes (WAIT)
  
 Comment: Create the registry entries to run certain programs as Administrator
 Comment: If the OS is x64 then we must write to the x64 part of the registry
@@ -84,13 +85,8 @@ Set Variable REGCHECK to $TARGETDIR$\Network\Bin\Collection.exe
 Replace \\ with \ in variable REGCHECK
 Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
  
-Comment: Interface Manager
-Set Variable REGCHECK to $TARGETDIR$\InterfaceManager\TMSInterfaceManager.exe
-Replace \\ with \ in variable REGCHECK
-Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
- 
-Comment: Tiger License Manager
-Set Variable REGCHECK to $TARGETDIR$\tiglicenseman.exe
+Comment: iLinkManager
+Set Variable REGCHECK to $TARGETDIR$\iLinkManager\iLinkManager.exe
 Replace \\ with \ in variable REGCHECK
 Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
  
@@ -169,6 +165,11 @@ Set Variable REGCHECK to $TARGETDIR$\systemconfig.exe
 Replace \\ with \ in variable REGCHECK
 Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
  
+Comment: TigLicenseMan
+Set Variable REGCHECK to $TARGETDIR$\tiglicenseman.exe
+Replace \\ with \ in variable REGCHECK
+Write Registry Key HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Layers\$REGCHECK$, ~ RUNASADMIN
+ 
 Comment: Set a Windows Defender Exclusion for the tig2020 dir for Client Operating Systems
 if Variable OSTYPE Equals CLIENT
   Set Variable REGCHECK to $TARGETDIR$
@@ -200,7 +201,8 @@ Create Folder $TARGETDIR$\Graphics
 Create Folder $TARGETDIR$\Graphics\Backgrounds
 Create Folder $TARGETDIR$\Graphics\Bitmaps
 Create Folder $TARGETDIR$\Graphics\Icons
-Create Folder $TARGETDIR$\InterfaceManager
+Create Folder $TARGETDIR$\iChargeWinService
+Create Folder $TARGETDIR$\iLinkManager
 Create Folder $TARGETDIR$\LogFiles
 Create Folder $TARGETDIR$\Scripts
 Create Folder $TARGETDIR$\Temp
@@ -219,15 +221,13 @@ if Variable TIGERILINK not Equals TRUE
   Create Folder $TARGETDIR$\Network\SwitchConf
   Create Folder $TARGETDIR$\Network\Tmp
 end
-Comment: If we are to deploy the License Batch File create hidden dir
-if Variable DEPLOYLICENCEBAT Equals TRUE
-  Create Folder $TARGETDIR$\Network\Batch\LB
-  Run Program ATTRIB.exe +h $TARGETDIR$\Network\Batch\LB
-end
  
 Comment: Grant the current user full user rights to the tig2020 dir
 Run Program ICACLS.exe "$TARGETDIR$" /grant "%USERDOMAIN%\%USERNAME%":(OI)(CI)F (WAIT)
 Comment: Grant any authenticated user full rights to tig2020 dir
 Run Program ICACLS "$TARGETDIR$" /grant "Authenticated Users":(OI)(CI)F (WAIT)
 Set Variable TASKBATTEXT to @ECHO OFF$NEWLINE$$NEWLINE$REM ** Set permissions for the tig2020 directory$NEWLINE$$NEWLINE$ICACLS.exe "$TARGETDIR$" /grant "%USERDOMAIN%\%USERNAME%":(OI)(CI)F$NEWLINE$ICACLS.exe "$TARGETDIR$" /grant "Authenticated Users":(OI)(CI)F$NEWLINE$$NEWLINE$
+ 
+Comment: Set Hosts default entry
+Write into Text File C:\Windows\System32\drivers\etc\hosts from Value $NEWLINE$127.0.0.1 local.tigertms-apps.com$NEWLINE$ (at end of file)
  

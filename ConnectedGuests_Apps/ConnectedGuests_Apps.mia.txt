@@ -1,28 +1,20 @@
 [DEFINE REGION: Check Application Requirements]
-Comment: Set the compiler product type
-Set Variable PRODUCTBRAND to 
-[compiler if Variable PRODUCTBRAND Equals CG]
-Set Variable TITLE to Connected Guests Apps
-Set Variable COMPANY to Connected Guests
-Set Variable PRODUCTBRAND to CG
-[compiler end]
-[compiler if Variable PRODUCTBRAND Equals MITEL]
-Set Variable TITLE to Mitel Connected Guests Apps
-Set Variable COMPANY to Mitel Connected Guests
-Set Variable PRODUCTBRAND to MITEL
-[compiler end]
- 
 Comment: Remove InstallAware Branding
 Set Variable MYAHLOGO to TRUE
  
 Comment: Set the Installer to Native mode rather than using Windows Installer
 Set Variable NATIVE_ENGINE to TRUE
-Set Variable NATIVE_OVERWRITE_OLDER to FALSE
+Comment: We need Native Overwrite Older to True to replace 50.x with 7.x (technically older version numbers)
+Set Variable NATIVE_OVERWRITE_OLDER to TRUE
 Set Variable NATIVE_OVERWRITE to ALWAYS
+ 
+Comment: Set the last maximum version where we will require a MySQL/MariaDB update (stop/replacefiles/start)
+Set Variable UPGRADEMYSQLVERSION to 7.0.0.0
  
 Comment: Set default installer Variables
 Set Variable SKIPSYSTEMCHECKS to FALSE
 Set Variable DEBUGMODE to FALSE
+Set Variable SKIPALL to FALSE
 Set Variable SKIPDISM to FALSE
 Set Variable FORCEALLOPTIONS to FALSE
 Set Variable INITERROR to FALSE
@@ -31,7 +23,6 @@ Set Variable ALREADYINSTALLED to FALSE
 Set Variable ALREADYINSTALLEDVERSION to 0.0.0.0
 Set Variable TESTMARIADB to FALSE
 Set Variable MYSQLUPGRADEREQUIRED to FALSE
-Set Variable MYSQLPATCHREQUIRED to FALSE
 Set Variable FILEUPGRADEREQUIRED to 
 Set Variable UPGRADEPRODUCT to FALSE
 Set Variable MARIADBTHISSERVER to 
@@ -44,20 +35,13 @@ Set Variable DISMONLINE to
 Set Variable DISMOFFLINE to 
 Set Variable WINDISCDRIVE to C:\
 Set Variable TASKBATTEXT to 
-Set Variable DEPLOYLICENCEBAT to FALSE
  
-Comment: Set the core product variables
-Set Variable INSTALLICHARGE to FALSE
-Set Variable INSTALLHOTELMGR to FALSE
+Comment: Set the core product variables - if either are true the product selection will be skipped
+Set Variable INSTALLICHARGE to TRUE
  
 Comment: Set product specific variables
 Set Variable TIGERPRO to FALSE
-Set Variable TIGERCUB to FALSE
 Set Variable TIGERILINK to FALSE
-Set Variable TIGERCA to FALSE
-Set Variable TIGERSMB to FALSE
-Set Variable MGRUSEBLANK to FALSE
-Set Variable MGRUSETEMPLATE to FALSE
  
 Comment: Obtain the MAC Address for this installation
 Run Program CMD.exe /C IPCONFIG /ALL | FIND "Physical Address" > C:\TTInstall_MACAddress.txt, startup in folder C:\ (WAIT)
@@ -85,11 +69,13 @@ end
 if Variable CMDLINE Contains -SKIPDISM
   Set Variable SKIPDISM to TRUE
 end
+if Variable CMDLINE Contains -SKIPALL
+  Set Variable SKIPALL to TRUE
+  Set Variable SKIPSYSTEMCHECKS to TRUE
+  Set Variable SKIPDISM to TRUE
+end
 if Variable CMDLINE Contains -FORCEALLOPTIONS
   Set Variable FORCEALLOPTIONS to TRUE
-end
-if Variable CMDLINE Contains -LB
-  Set Variable DEPLOYLICENCEBAT to TRUE
 end
  
 Comment: Get the Kernel Version
@@ -117,14 +103,14 @@ Get System Setting Windows in 64 bit Mode into OS64
  
 Comment: Display debug message if debug is on
 if Variable DEBUGMODE Equals TRUE
-  MessageBox: Debug, Operating System: [$OSNAME$]$NEWLINE$Operating System Type: [$OSTYPE$]$NEWLINE$Kernel: [$KERNEL$]$NEWLINE$x64: [$OS64$]$NEWLINE$$NEWLINE$Product Brand: [$PRODUCTBRAND$]
+  MessageBox: Debug, Operating System: [$OSNAME$]$NEWLINE$Operating System Type: [$OSTYPE$]$NEWLINE$Kernel: [$KERNEL$]$NEWLINE$x64: [$OS64$]$NEWLINE$
 end
  
 Comment: Begin system checks unless we are meant to skip
 if Variable SKIPSYSTEMCHECKS not Equals TRUE
-  Comment: Check the OS is atleast 7/2008
-  if Variable KERNEL not Greater Than (Version) 6.0
-    MessageBox: $TITLE$ Setup Error, This product requires the below Operating System or newer:$NEWLINE$$NEWLINE$Client OS: Windows 7$NEWLINE$Server OS: Windows Server 2008 R2$NEWLINE$$NEWLINE$Setup cannot continue.
+  Comment: Check the OS is atleast 10/2012
+  if Variable KERNEL not Greater Than (Version) 6.2
+    MessageBox: $TITLE$ Setup Error, This product requires the below Operating System or newer:$NEWLINE$$NEWLINE$Client OS: Windows 10$NEWLINE$Server OS: Windows Server 2012 R2$NEWLINE$$NEWLINE$Setup cannot continue.
     Terminate Installation
   end
    
@@ -142,7 +128,7 @@ if Variable SKIPSYSTEMCHECKS not Equals TRUE
     Set Variable INITERRORTEXT to $INITERRORTEXT$Run as Administrator$NEWLINE$
   end
    
-  Comment: Check that .NET 4.5.2 is installed if it's before Windows 10 / 2016 (They already include it built in)
+  Comment: Check that .NET 4.6 is installed if it's before Windows 10 / 2016 (They already include it built in)
   if Variable KERNEL Greater Than (Version) 6.2.999
     if Variable OS64 Equals TRUE
       Set Itanium ia64 - Native 64 bit Windows, Intel Itanium Architecture - installation mode
@@ -154,11 +140,17 @@ if Variable SKIPSYSTEMCHECKS not Equals TRUE
     if Variable CHECKSYSTEM Contains NO$
       Set Variable CHECKSYSTEM to 0
     end
-    if Variable CHECKSYSTEM not Greater Than 379892
+    if Variable CHECKSYSTEM not Greater Than 393295
       Set Variable INITERROR to TRUE
-      Set Variable INITERRORTEXT to $INITERRORTEXT$Microsoft .NET 4.5.2$NEWLINE$
+      Set Variable INITERRORTEXT to $INITERRORTEXT$Microsoft .NET 4.6$NEWLINE$
     end
   end
+end
+ 
+Comment: Even if Skip System Checks is on, we can only run on x64
+if Variable OS64 not Equals TRUE
+  MessageBox: $TITLE$ Setup Error, This product requires the Operating System to be 64-bit.
+  Terminate Installation
 end
  
 Comment: Terminate the installation if any of the pre-requisits are not installed
@@ -298,11 +290,12 @@ if Variable CONFIGCHECK not Contains NO$
   end
 end
  
+Comment: For the sake of easy version comparison (greater or less than), replace 50. with 5. 
+Replace 50. with 5. in variable ALREADYINSTALLEDVERSION
+ 
 Comment: Check if we need to install a MySQL Patch
-if Variable ALREADYINSTALLEDVERSION not Greater Than (Version) 50.3.1.0
-  if Variable ALREADYINSTALLEDVERSION Greater Than (Version) 4.999.999.999
-    Set Variable MYSQLPATCHREQUIRED to TRUE
-  end
+if Variable UPGRADEMYSQLVERSION Greater Than (Version) $ALREADYINSTALLEDVERSION$
+  Set Variable MYSQLUPGRADEREQUIRED to TRUE
 end
  
 if Variable MAINTENANCE Equals TRUE
@@ -336,42 +329,16 @@ if Variable ALREADYINSTALLED not Equals TRUE
   end
   Set Variable TARGETDIR to $TARGETDRIVE$\tig2020
   Replace \\ with \ in variable TARGETDIR
-else
-  MessageBox: $TITLE$ Setup, A previous installation has been found and will be upgraded.$NEWLINE$$NEWLINE$Before the upgrade is completed, an Engineering Backup will be placed in the root of $OSDIR$.
 end
 Comment: Set the BACKUPDIR
 Set Variable BACKUPDIR to $TARGETDRIVE$\Tiger_Backup
 Replace \\ with \ in variable BACKUPDIR
-Comment: Do not go to Core Product Selection if it's already been selected
-if Variable INSTALLICHARGE not Equals FALSE
-  GoTo Label: Custom Setup
-end
-if Variable INSTALLHOTELMGR not Equals FALSE
-  GoTo Label: Custom Setup
-end
 label: Core Product Selection
-if Variable FORCEALLOPTIONS Equals FALSE
-  Comment: Display the Core Product options ONLY if it's a Server OS - else skip and only allow iCharge
-  if Variable OSTYPE Contains SERVER
-    Display Dialog: productselection, wait for dialog to return (modal)
-  else
-    Set Variable INSTALLICHARGE to TRUE
-  end
-else
-  Comment: FORCEALLOPTIONS in CMD line - show the product selection anyway
-  Display Dialog: productselection, wait for dialog to return (modal)
-end
 if Variable WIZARD Equals BACK
   GoTo Label: Destination Directory
 end
 if Variable WIZARD Equals CANCEL
   GoTo Label: Main Install
-end
-if Variable INSTALLICHARGE Equals FALSE
-  if Variable INSTALLHOTELMGR Equals FALSE
-    MessageBox: $TITLE$ Setup, Please select at least one Core Product.
-    GoTo Label: Core Product Selection
-  end
 end
 Comment: Now we know the products, set the components
 Define Component: Base
@@ -381,34 +348,16 @@ Define Component: Base\iCharge/iLink\MariaDB
 Define Component: Base\iCharge/iLink\EvMux
 Define Component: Base\iCharge/iLink\Web Front End
 Define Component: Base\iCharge/iLink\iCharge Services
-Define Component: Base\iCharge/iLink\iCharge Services\Call Package Broker
 Define Component: Base\iCharge/iLink\iCharge Services\iPost
 Define Component: Base\iCharge/iLink\Interface Connectors
-if Variable PRODUCTBRAND not Equals MITEL
-  Define Component: Base\iCharge/iLink\Interface Connectors\Avaya IP Office
-  Define Component: Base\iCharge/iLink\Interface Connectors\Cisco CUCM
-end
+Define Component: Base\iCharge/iLink\Interface Connectors\Cisco CUCM
 Define Component: Base\iCharge/iLink\Interface Connectors\Generic EXT
 Define Component: Base\iCharge/iLink\Interface Connectors\Generic PMS
 Define Component: Base\iCharge/iLink\Interface Connectors\MXP PMS
-if Variable PRODUCTBRAND not Equals MITEL
-  Define Component: Base\iCharge/iLink\Interface Connectors\NEC SV8300/SV8500
-  Define Component: Base\iCharge/iLink\Interface Connectors\Panasonic KX-TDA/TDE
-end
+Define Component: Base\iCharge/iLink\Interface Connectors\NEC SV8300/SV8500
+Define Component: Base\iCharge/iLink\Interface Connectors\Panasonic KX-TDA/TDE
 Define Component: Base\iCharge/iLink\Interface Connectors\PAR Springer-Miller
-Comment: Define HotelMGR Components if it's a Server OS
-if Variable OSTYPE Equals SERVER
-end
-if Variable INSTALLHOTELMGR Equals TRUE
-  Define Component: Base\HotelMGR
-end
 label: Custom Setup
-Comment: If only HotelMGR is selected, skip the Components Tree
-if Variable INSTALLICHARGE Equals FALSE
-  if Variable INSTALLHOTELMGR Equals TRUE
-    GoTo Label: HotelMGR Template Wizard
-  end
-end
 Display Dialog: componentstree, wait for dialog to return (modal)
 Comment: Check NEXT was pressed
 if Variable WIZARD Equals BACK
@@ -418,39 +367,9 @@ else
     GoTo Label: Main Install
   end
 end
-Comment: Check at least either iCharge or HotelMGR is selected
-Get Component Base\iCharge/iLink Selection State into Variable DIALOGTEST
-Get Component Base\HotelMGR Selection State into Variable DIALOGTEST2
-if Variable DIALOGTEST Equals FALSE
-  if Variable DIALOGTEST2 Equals FALSE
-    MessageBox: $TITLE$ Setup, No products are selected for installation.  You must choose at least one product before the installation can continue.
-    GoTo Label: Custom Setup
-  end
-end
-label: HotelMGR Template Wizard
-Comment: Only display this wizard if HotelMGR is selected, else skip it
-if Variable INSTALLHOTELMGR not Equals TRUE
-  GoTo Label: MariaDB Wizard
-end
-Display Dialog: hotelmgrtemplate, wait for dialog to return (modal)
-Comment: Check one option is selected
-if Variable MGRUSEBLANK Equals FALSE
-  if Variable MGRUSETEMPLATE Equals FALSE
-    MessageBox: $TITLE$ Setup, Please select whether to use a blank database or a template for HotelMGR.
-    GoTo Label: HotelMGR Template Wizard
-  end
-end
-if Variable WIZARD Equals BACK
-  GoTo Label: Custom Setup
-else
-  if Variable WIZARD Equals CANCEL
-    GoTo Label: Main Install
-  end
-end
 label: MariaDB Wizard
 Comment: Only show this dialog if MariaDB is not selected
 Get Component Base\iCharge/iLink\MariaDB Selection State into Variable DIALOGTEST
-Get Component Base\HotelMGR Selection State into Variable DIALOGTEST2
 if Variable DIALOGTEST Equals FALSE
   Set Variable TESTMARIADB to TRUE
   Display Dialog: mariadb, wait for dialog to return (modal)
@@ -475,18 +394,8 @@ if Variable DIALOGTEST Equals FALSE
 end
 Set Variable TESTMARIADB to FALSE
 label: CubPro Wizard
-Set Variable CUBPRO to 
 Set Variable TIGERPRO to FALSE
-Set Variable TIGERCUB to FALSE
 Set Variable TIGERILINK to FALSE
-Set Variable TIGERCA to FALSE
-Set Variable TIGERSMB to FALSE
-Comment: If iCharge or iLink isn't selected - default to iLink for HotelMGR
-if Variable INSTALLICHARGE Equals FALSE
-  Set Variable TIGERILINK to TRUE
-  Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Product, iLink
-  GoTo Label: DISM Method
-end
 Display Dialog: cubpro, wait for dialog to return (modal)
 if Variable WIZARD Equals BACK
   GoTo Label: Custom Setup
@@ -496,30 +405,17 @@ else
   end
 end
 if Variable TIGERPRO Equals FALSE
-  if Variable TIGERCUB Equals FALSE
-    if Variable TIGERILINK Equals FALSE
-      if Variable TIGERCA Equals FALSE
-        if Variable TIGERSMB Equals FALSE
-          Comment: No selection was made
-          MessageBox: $TITLE$ Setup, Please select one of: $NEWLINE$$NEWLINE$iCharge Pro$NEWLINE$iCharge Cub$NEWLINE$iLink$NEWLINE$Call Accounting Only$NEWLINE$SMB
-          GoTo Label: CubPro Wizard
-        end
-      end
-    end
+  if Variable TIGERILINK Equals FALSE
+    Comment: No selection was made
+    MessageBox: $TITLE$ Setup, Please select one of: $NEWLINE$$NEWLINE$iCharge Pro$NEWLINE$iLink
+    GoTo Label: CubPro Wizard
   end
 end
 if Variable TIGERPRO Equals TRUE
-  Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Product, Pro
-end
-if Variable TIGERCUB Equals TRUE
-  Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Product, Cub
+  Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Product, Enterprise
 end
 if Variable TIGERILINK Equals TRUE
   Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Product, iLink
-end
-if Variable TIGERSMB Equals TRUE
-  Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Product, SMB
-  Set Variable TIGERPRO to TRUE
 end
 label: DISM Method
 Comment: Don't display this on Embedded OS's
@@ -606,9 +502,7 @@ Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Base i
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\MariaDB into INSTALLED_MARIADB
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Silverlight into INSTALLED_SILVERLIGHT
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\EvMux into INSTALLED_EVMUX
-Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\CallPkgBroker into INSTALLED_CALLPKGBROKER
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\iPost into INSTALLED_IPOST
-Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\AvayaIPOffice into INSTALLED_AVAYAIPOFFICE
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Cisco into INSTALLED_CISCO
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\GenericExt into INSTALLED_GENERICEXT
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\GenericPMS into INSTALLED_GENERICPMS
@@ -616,14 +510,10 @@ Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\MXPPMS
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\NECUniverge into INSTALLED_NECUniverge
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Panasonic into INSTALLED_PANASONIC
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\SpringerMiller into INSTALLED_SPRINGERMILLER
-Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\HotelMGR into INSTALLED_HOTELMGR
  
 Comment: Check if we need to upgrade
-Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\InstallerVersion into REGCHECK
-if Variable REGCHECK not Contains NO$
-  if Variable VERSION Greater Than (Version) $REGCHECK$
-    Set Variable FILEUPGRADEREQUIRED to TRUE
-  end
+if Variable VERSION Greater Than (Version) $ALREADYINSTALLEDVERSION$
+  Set Variable FILEUPGRADEREQUIRED to TRUE
 end
  
 label: Maintenance Dialog
@@ -639,7 +529,7 @@ if Variable FILEUPGRADEREQUIRED Equals TRUE
   end
   if Variable UPGRADEPRODUCT Equals TRUE
     Set Variable MAINTENANCE to FALSE
-    MessageBox: $TITLE$ Setup, Please close any open Connected Guests applications before continuing. All services will automatically be stopped.
+    MessageBox: $TITLE$ Setup, Please close any open TigerTMS applications before continuing. All services will automatically be stopped.
     GoTo Label: Custom Setup
   end
 end
@@ -692,7 +582,6 @@ if Variable REMOVE Equals TRUE
    
   Comment: Remove Web Sites
   Include Script: Web_Uninstall
-  Include Script: IPOffice_Uninstall
   Include Script: Cisco_Uninstall
   Include Script: GenericExt_Uninstall
   Include Script: GenericPMS_Uninstall
@@ -700,7 +589,6 @@ if Variable REMOVE Equals TRUE
   Include Script: SpringerMiller_Uninstall
    
   Comment: Remove Services
-  Include Script: CallPkgBroker_Uninstall
   Include Script: EvMux_Uninstall
   Include Script: Cisco_Uninstall
   Include Script: NECUniverge_Uninstall
@@ -743,7 +631,6 @@ else
     Run Program $WINSYSDIR$\net.exe STOP "SpringerMillerClientService" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "Tiger_Session_Manager" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "TigInterfaceMonitor" (WAIT)
-    Run Program $WINSYSDIR$\net.exe STOP "TigCallPkgBroker" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "TigerTMSCMClientService" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "DC_Call_Manager" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "NotificationEscalationService" (WAIT)
@@ -751,12 +638,8 @@ else
     Run Program $WINSYSDIR$\net.exe STOP "TigerGenericPMSService" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "TigerGenericMXPPMSService" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "TigerGenericEXTService" (WAIT)
-     
-    Run Program $WINSYSDIR$\net.exe START "MySQL" (WAIT)
-    Set Variable PROGRESSTEXT to Creating an Engineering Backup to $OSDIR$...
-    Run Program $TARGETDIR$\Utility\tigbackup.exe -ef$TARGETDIR$ -et$OSDIR$ (WAIT)
+    Run Program $WINSYSDIR$\net.exe STOP "TigerTMSLicenseService" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "MySQL" (WAIT)
-     
      
     Run Program $WINSYSDIR$\sc.exe DELETE "Tiger_Session_Manager" (WAIT)
      
@@ -842,25 +725,6 @@ else
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\EvMux, 0
   end
    
-  label: Files CallPkgBroker
-  if Variable DEBUGMODE Equals TRUE
-    MessageBox: $TITLE$ Debug, Test CallPkg Files
-  end
-   
-  [DEFINE WEB MEDIA Call Package Broker]
-  Get Component Base\iCharge/iLink\iCharge Services\Call Package Broker Selection State into Variable SELECTED
-  if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_CALLPKGBROKER Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files iPost
-      end
-    end
-    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\CallPkgBroker, 1
-    Include Script: CallPkgBroker_Files
-  else
-    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\CallPkgBroker, 0
-  end
    
   label: Files iPost
   if Variable DEBUGMODE Equals TRUE
@@ -873,33 +737,13 @@ else
     if Variable MAINTENANCE Equals TRUE
       if Variable INSTALLED_IPOST Equals TRUE
         Comment: Skip if the files are already installed
-        GoTo Label: Files AvayaIPOffice
+        GoTo Label: Files Cisco
       end
     end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\iPost, 1
     Include Script: iPost_Files
   else
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\iPost, 0
-  end
-   
-  label: Files AvayaIPOffice
-  if Variable DEBUGMODE Equals TRUE
-    MessageBox: $TITLE$ Debug, Test IPO Files
-  end
-   
-  [DEFINE WEB MEDIA Avaya IP Office]
-  Get Component Base\iCharge/iLink\Interface Connectors\Avaya IP Office Selection State into Variable SELECTED
-  if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_AVAYAIPOFFICE Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files Cisco
-      end
-    end
-    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\AvayaIPOffice, 1
-    Include Script: IPOffice_Files
-  else
-    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\AvayaIPOffice, 0
   end
    
   label: Files Cisco
@@ -1033,33 +877,13 @@ else
     if Variable MAINTENANCE Equals TRUE
       if Variable INSTALLED_SPRINGERMILLER Equals 1
         Comment: Skip if the files are already installed
-        GoTo Label: Files HotelMGR
+        GoTo Label: Files End
       end
     end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\SpringerMiller, 1
     Include Script: SpringerMiller_Files
   else
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\SpringerMiller, 0
-  end
-   
-  label: Files HotelMGR
-  if Variable DEBUGMODE Equals TRUE
-    MessageBox: $TITLE$ Debug, Test HotelMGR Files
-  end
-   
-  [DEFINE WEB MEDIA HotelMGR]
-  Get Component Base\HotelMGR Selection State into Variable SELECTED
-  if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_HOTELMGR Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files End
-      end
-    end
-    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\HotelMGR, 1
-    Include Script: HotelMGR_Files
-  else
-    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\HotelMGR, 0
   end
    
   label: Files End
@@ -1105,12 +929,6 @@ else
               Include Script: MariaDB_Install
               Set Variable PROGRESS to 100
             end
-            if Variable MYSQLPATCHREQUIRED Equals TRUE
-              Comment: A patch is required which means we need to reinstall the service
-              Set Variable PROGRESSTEXT to MariaDB: Installing
-              Include Script: MariaDB_Install
-              Set Variable PROGRESS to 100
-            end
             if Variable INSTALLED_MARIADB Equals 1
               Comment: Skip if already installed
               Run Program $WINSYSDIR$\net.exe START "MySQL" (WAIT)
@@ -1132,8 +950,10 @@ else
         if Variable SELECTED Equals TRUE
           Set Variable PROGRESS to 0
           if Variable INSTALLED_BASE Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install Silverlight
+            if Variable FILEUPGRADEREQUIRED not Equals TRUE
+              Comment: Skip if already installed and we don't need to file upgrade
+              GoTo Label: Install Silverlight
+            end
           end
           Set Variable PROGRESSTEXT to iCharge: Installing
           Include Script: Base_Install_IIS
@@ -1172,7 +992,7 @@ else
         if Variable SELECTED Equals TRUE
           if Variable INSTALLED_EVMUX Equals 1
             Comment: Skip if already installed
-            GoTo Label: Install Call Package Broker
+            GoTo Label: Install iPost
           end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to EvMux: Installing
@@ -1185,28 +1005,6 @@ else
           end
         end
          
-        label: Install Call Package Broker
-        if Variable DEBUGMODE Equals TRUE
-          MessageBox: $TITLE$ Debug, Test CallPkg Install
-        end
-         
-        Get Component Base\iCharge/iLink\iCharge Services\Call Package Broker Selection State into Variable SELECTED
-        if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_CALLPKGBROKER Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install iPost
-          end
-          Set Variable PROGRESS to 0
-          Set Variable PROGRESSTEXT to Call Package Broker: Installing
-          Include Script: CallPkgBroker_Install
-          Set Variable PROGRESS to 100
-        else
-          if Variable INSTALLED_CALLPKGBROKER Equals 1
-            Comment: The component is currently installed but no longer selected
-            Include Script: CallPkgBroker_Uninstall
-          end
-        end
-         
         label: Install iPost
         if Variable DEBUGMODE Equals TRUE
           MessageBox: $TITLE$ Debug, Test iPost Install
@@ -1216,7 +1014,7 @@ else
         if Variable SELECTED Equals TRUE
           if Variable INSTALLED_IPOST Equals 1
             Comment: Skip if already installed
-            GoTo Label: Install Avaya IP Office
+            GoTo Label: Install Cisco
           end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to iPost: Installing
@@ -1226,28 +1024,6 @@ else
           if Variable INSTALLED_IPOST Equals 1
             Comment: The component is currently installed but no longer selected
             Include Script: iPost_Uninstall
-          end
-        end
-         
-        label: Install Avaya IP Office
-        if Variable DEBUGMODE Equals TRUE
-          MessageBox: $TITLE$ Debug, Test IPO Install
-        end
-         
-        Get Component Base\iCharge/iLink\Interface Connectors\Avaya IP Office Selection State into Variable SELECTED
-        if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_AVAYAIPOFFICE Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install Cisco
-          end
-          Set Variable PROGRESS to 0
-          Set Variable PROGRESSTEXT to Avaya IPOffice: Installing
-          Include Script: IPOffice_Install
-          Set Variable PROGRESS to 100
-        else
-          if Variable INSTALLED_AVAYAIPOFFICE Equals 1
-            Comment: The component is currently installed but no longer selected
-            Include Script: IPOffice_Uninstall
           end
         end
          
@@ -1393,7 +1169,7 @@ else
         if Variable SELECTED Equals TRUE
           if Variable INSTALLED_SPRINGERMILLER Equals 1
             Comment: Skip if already installed
-            GoTo Label: Install HotelMGR
+            GoTo Label: Install End
           end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to Springer Miller: Installing
@@ -1403,28 +1179,6 @@ else
           if Variable INSTALLED_SPRINGERMILLER Equals 1
             Comment: The component is currently installed but no longer selected
             Include Script: SpringerMiller_Uninstall
-          end
-        end
-         
-        label: Install HotelMGR
-        if Variable DEBUGMODE Equals TRUE
-          MessageBox: $TITLE$ Debug, Test HotelMGR Install
-        end
-         
-        Get Component Base\HotelMGR Selection State into Variable SELECTED
-        if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_HOTELMGR Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install End
-          end
-          Set Variable PROGRESS to 0
-          Set Variable PROGRESSTEXT to HotelMGR: Installing
-          Include Script: HotelMGR_Install
-          Set Variable PROGRESS to 100
-        else
-          if Variable INSTALLED_HOTELMGR Equals 1
-            Comment: The component is currently installed but no longer selected
-            Include Script: HotelMGR_Uninstall
           end
         end
          

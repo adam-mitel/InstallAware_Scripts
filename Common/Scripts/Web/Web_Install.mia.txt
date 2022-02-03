@@ -6,39 +6,106 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running Web_Install
 end
  
-Comment: Remove any existing iCharge instance
+Set Variable PROGRESSTEXT to Web Front End: Creating IIS Virtual Directories...
+Set Variable PROGRESS to 10
+ 
+Comment: Get the IIS Default Website Index
 Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+ 
+Comment: Add a self signed certificate and bind
+Run Program Powershell.exe -Command "New-SelfSignedCertificate -FriendlyName "AutoSelfSignedCert" -DnsName ttdefault -CertStoreLocation cert:Localmachine\My" (WAIT)
+ 
+Comment: Remove any existing iCharge and iChargeUno instance
 Delete Virtual Folder "iCharge" in IIS Site #$WEBSITEINDEXVAR$
+Delete Virtual Folder "iChargeUno" in IIS Site #$WEBSITEINDEXVAR$
 if Variable OS64 Equals TRUE
   Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: iCharge (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: iChargeUno (WAIT)
 else
   Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: iCharge (WAIT)
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: iChargeUno (WAIT)
 end
  
-Set Variable PROGRESSTEXT to Web Front End: Creating IIS Virtual Directory...
+if Variable TIGERILINK not Equals TRUE
+  Comment: Create iCharge for Vista or Newer
+  Create Virtual Folder "iChargeUno" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\iChargeUno
+   
+  Comment: If Windows is x64, we need to set the application pool to 32 bit mode and other settings
+  if Variable OS64 Equals TRUE
+    Set Variable PROGRESSTEXT to Web Front End: Setting Application Pool to x86 Mode...
+    Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iChargeUno" /enable32BitAppOnWin64:true (WAIT)
+    Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iChargeUno" -processmodel.loaduserprofile:"false" (WAIT)
+  else
+    Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "iChargeUno" -processmodel.loaduserprofile:"false" (WAIT)
+  end
+   
+  if Variable MARIASERVER not Equals 
+    Comment: If MariaDB isn't installed change the Web.config to point at the new IP Address
+    Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "connectionString=\"Server=localhost;Port=3306" --replace "connectionString=\"Server=$MARIASERVER$;Port=3306" --dir "$TARGETDIR$\Web\iCharge" --fileMask="Web.config" (WAIT)
+  end
+   
+  Comment: Grant permissions to tig2020 for the IIS Application Pool
+  Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\iChargeUno":(OI)(CI)F
+   
+  Set Variable PROGRESS to 35
+end
+ 
+Comment: *** DASHBOARD ***
+Comment: Remove any existing Dashboard instance
+Delete Virtual Folder "Dashboard" in IIS Site #$WEBSITEINDEXVAR$
+if Variable OS64 Equals TRUE
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: Dashboard (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: Dashboard (WAIT)
+end
  
 Comment: Create the configured IIS Web Site and set Read Permissions for IIS
-Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
-Comment: Create iCharge for Vista or Newer
-Create Virtual Folder "iCharge" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\iCharge
+Create Virtual Folder "Dashboard" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\Dashboard
  
 Comment: If Windows is x64, we need to set the application pool to 32 bit mode and other settings
 if Variable OS64 Equals TRUE
   Set Variable PROGRESSTEXT to Web Front End: Setting Application Pool to x86 Mode...
-  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iCharge" /enable32BitAppOnWin64:true (WAIT)
-  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iCharge" -processmodel.loaduserprofile:"false" (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "Dashboard" -managedRuntimeVersion:v4.0 (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "Dashboard" -startMode:AlwaysRunning (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "Dashboard" -processModel.loadUserProfile:"true" (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "Dashboard" -processModel.idleTimeout:00:00:00 (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "Dashboard" -recycling.periodicRestart.time:00:00:00 (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set app "Default Web Site/Dashboard" -preloadEnabled:true (WAIT)
 else
-  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "iCharge" -processmodel.loaduserprofile:"false" (WAIT)
-end
- 
-Set Variable PROGRESS to 30
-Set Variable PROGRESSTEXT to Web Front End: Configuring Silverlight specific settings...
- 
-if Variable MARIASERVER not Equals 
-  Comment: If MariaDB isn't installed change the Web.config to point at the new IP Address
-  Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "connectionString=\"Server=localhost;Port=3306" --replace "connectionString=\"Server=$MARIASERVER$;Port=3306" --dir "$TARGETDIR$\Web\iCharge" --fileMask="Web.config" (WAIT)
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "Dashboard" -managedRuntimeVersion:v4.0 (WAIT)
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "Dashboard" -startMode:AlwaysRunning (WAIT)
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "Dashboard" -processModel.loadUserProfile:"true" (WAIT)
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "Dashboard" -processModel.idleTimeout:00:00:00 (WAIT)
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "Dashboard" -recycling.periodicRestart.time:00:00:00 (WAIT)
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set app "Default Web Site/Dashboard" -preloadEnabled:true (WAIT)
 end
  
 Comment: Grant permissions to tig2020 for the IIS Application Pool
-Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\iCharge":(OI)(CI)F
+Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\Dashboard":(OI)(CI)F
+ 
+Set Variable PROGRESS to 70
+ 
+Comment: Remove any existing TTAPI instance
+Delete Virtual Folder "TTAPI" in IIS Site #$WEBSITEINDEXVAR$
+if Variable OS64 Equals TRUE
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: TTAPI (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: TTAPI (WAIT)
+end
+ 
+Comment: Create the configured IIS Web Site and set Read Permissions for IIS
+Create Virtual Folder "TTAPI" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\TTAPI
+ 
+Comment: If Windows is x64, we need to set the application pool to 32 bit mode and other settings
+if Variable OS64 Equals TRUE
+  Set Variable PROGRESSTEXT to Web Front End: Setting Application Pool to x86 Mode...
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "TTAPI" /enable32BitAppOnWin64:true (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "TTAPI" -processmodel.loaduserprofile:"false" (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "TTAPI" -processmodel.loaduserprofile:"false" (WAIT)
+end
+ 
+Comment: Grant permissions to tig2020 for the IIS Application Pool
+Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\TTAPI":(OI)(CI)F
+ 
  

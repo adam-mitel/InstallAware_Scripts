@@ -8,37 +8,38 @@ end
  
 Comment: IISRESET and rename any old files
 Run Program IISRESET.exe  (WAIT)
-Run Program $WINSYSDIR$\CMD.exe /C REN iCharge iCharge_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
+Run Program $WINSYSDIR$\CMD.exe /C REN API API_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
+Run Program $WINSYSDIR$\CMD.exe /C REN Dashboard Dashboard_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
+Run Program $WINSYSDIR$\CMD.exe /C REN iChargeUno iChargeUno_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
  
-Create Folder $TARGETDIR$\Web\iCharge
+Create Folder $TARGETDIR$\Web\API
+Create Folder $TARGETDIR$\Web\Dashboard
+if Variable TIGERILINK not Equals TRUE
+  Create Folder $TARGETDIR$\Web\iChargeUno
+end
  
+Comment: Install the Policy XML files required by Uno
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\clientaccesspolicy.xml to $WWWROOTDIR$, ignore files matching wildcard pattern(s) *.pdb;
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\crossdomain.xml to $WWWROOTDIR$, ignore files matching wildcard pattern(s) *.pdb;
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\iCharge\*.* to $TARGETDIR$\Web\iCharge, ignore files matching wildcard pattern(s) *.pdb;autorpt;BottomBar.xml;PageNavigation.xml;, include subfolders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\favico.ico to $TARGETDIR$\Web\iCharge
-if Variable TIGERCUB Equals TRUE
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\Cub\*.* to $TARGETDIR$\Web\iCharge
-end
-if Variable TIGERPRO Equals TRUE
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\Pro\*.* to $TARGETDIR$\Web\iCharge
-end
-if Variable TIGERILINK Equals TRUE
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\iLink\*.* to $TARGETDIR$\Web\iCharge
-end
-if Variable TIGERCA Equals TRUE
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\SMB_CAOnly\*.* to $TARGETDIR$\Web\iCharge, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-end
-if Variable TIGERSMB Equals TRUE
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\SMB_CAOnly\*.* to $TARGETDIR$\Web\iCharge
-end
  
-Run Program $WINSYSDIR$\CMD.exe /C REN CompanyLogo.png _CompanyLogo.png, startup in folder $TARGETDIR$\Web\iCharge\ClientBin\Images\ (WAIT)
+Comment: Install the Web folders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\API\*.* to $TARGETDIR$\Web\API, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\Dashboard\*.* to $TARGETDIR$\Web\Dashboard, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+if Variable TIGERILINK not Equals TRUE
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\iChargeUno\*.* to $TARGETDIR$\Web\iChargeUno, ignore files matching wildcard pattern(s) *.pdb;autorpt;, include subfolders
+  Comment: Remove the Company Logo placeholder from Uno
+  Run Program $WINSYSDIR$\CMD.exe /C REN CompanyLogo.png _CompanyLogo.png, startup in folder $TARGETDIR$\Web\iChargeUno\ClientBin\Images\ (WAIT)
+end
  
 Comment: Create Shortcut to Silverlight
 Delete Files $SHORTCUTFOLDER$\TigerTMS iCharge (when installing)
 Delete Files $DESKTOPDIR$\TigerTMS iCharge (when installing)
 Delete Files $SHORTCUTFOLDER$\TigerTMS iCharge.lnk (when installing)
 Delete Files $DESKTOPDIR$\TigerTMS iCharge.lnk (when installing)
-Create Shortcut $SHORTCUTFOLDER$\iCharge to C:\Program Files\Internet Explorer\iexplore.exe
-Create Shortcut $DESKTOPDIR$\iCharge to C:\Program Files\Internet Explorer\iexplore.exe
+Delete Files $SHORTCUTFOLDER$\Dashboard (when installing)
+Delete Files $DESKTOPDIR$\Dashboard (when installing)
+Delete Files $SHORTCUTFOLDER$\Dashboard.lnk (when installing)
+Delete Files $DESKTOPDIR$\Dashboard.lnk (when installing)
+Create Shortcut $SHORTCUTFOLDER$\Dashboard to https://local.tigertms-apps.com/Dashboard
+Create Shortcut $DESKTOPDIR$\Dashboard to https://local.tigertms-apps.com/Dashboard
  

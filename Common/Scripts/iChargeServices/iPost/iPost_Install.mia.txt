@@ -7,6 +7,7 @@ if Variable DEBUGMODE Equals TRUE
 end
  
 Set Variable PROGRESSTEXT to iPost: Installing Service...
+Run Program $WINSYSDIR$\SC.exe DELETE TigeriPostService (WAIT)
 Run Program $WINSYSDIR$\SC.exe CREATE TigeriPostService start= delayed-auto binPath= $TARGETDIR$\iPost\iPostService.exe (WAIT)
 Run Program $WINSYSDIR$\SC.exe FAILURE "TigeriPostService" reset= 0 actions= restart/60000 (WAIT)
  

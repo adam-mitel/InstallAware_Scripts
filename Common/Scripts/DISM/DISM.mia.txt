@@ -101,6 +101,18 @@ if Variable DISMLIST Contains IIS-StaticContent$NEWLINE$
   Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-StaticContent
 end
  
+if Variable DISMLIST Contains IIS-WebSockets$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-WebSockets
+end
+ 
+if Variable DISMLIST Contains NetFx4ServerFeatures
+  Set Variable DISMCMD to $DISMCMD$ /featurename:NetFx4ServerFeatures
+end
+ 
+if Variable DISMLIST Contains NetFx4$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:NetFx4
+end
+ 
 if Variable DISMLIST Contains NetFx4Extended-ASPNET45$NEWLINE$
   Set Variable DISMCMD to $DISMCMD$ /featurename:NetFx4Extended-ASPNET45
 end
@@ -149,7 +161,7 @@ if Variable DISMLIST Contains TelnetClient$NEWLINE$
   Set Variable DISMCMD to $DISMCMD$ /featurename:TelnetClient
 end
  
-Set Variable PROGRESSTEXT to Enabling IIS/ASPNET, this may take a few minutes...
+Set Variable PROGRESSTEXT to Enabling IIS/ASPNET using Windows Update, this may take serveral minutes...
 Set Variable DISMCMD to $DISMCMD$ /NoRestart
  
 Comment: If we're doing offline DISM append the disc path
@@ -177,7 +189,7 @@ if Variable DISMLOG Contains Error:
 end
  
 Comment: DISM was successful, remove any potential unwanted features
-Run Program DISM.exe /online /disable-feature /featurename:IIS-HttpCompressionStatic /NoRestart (WAIT)
+Run Program DISM.exe /online /disable-feature /featurename:IIS-HttpCompressionStatic /featurename:IIS-HttpCompressionDynamic /NoRestart (WAIT)
  
 Comment: Delete the log unless debug mode is enabled
 if Variable DEBUGMODE not Equals TRUE
