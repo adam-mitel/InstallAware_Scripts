@@ -6,6 +6,8 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running SpringerMiller_Files
 end
  
+Set Variable PROGRESSTEXT to Springer Miller: Deploying files...
+ 
 Create Folder $TARGETDIR$\SpringerMiller
 Create Folder $TARGETDIR$\Web\SpringerMiller
  

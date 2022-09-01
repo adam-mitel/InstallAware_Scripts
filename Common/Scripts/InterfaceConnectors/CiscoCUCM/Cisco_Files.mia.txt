@@ -6,6 +6,8 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running Cisco_Files
 end
  
+Set Variable PROGRESSTEXT to Cisco: Deploying files...
+ 
 Create Folder $TARGETDIR$\Cisco
 Create Folder $TARGETDIR$\Web\Cisco
  

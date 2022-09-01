@@ -9,7 +9,8 @@ Set Variable NATIVE_OVERWRITE_OLDER to TRUE
 Set Variable NATIVE_OVERWRITE to ALWAYS
  
 Comment: Set the last maximum version where we will require a MySQL/MariaDB update (stop/replacefiles/start)
-Set Variable UPGRADEMYSQLVERSION to 7.0.0.0
+Comment: Currently set to 8 to always force upgrading MySQL files
+Set Variable UPGRADEMYSQLVERSION to 8.0.0.0
  
 Comment: Set default installer Variables
 Set Variable SKIPSYSTEMCHECKS to FALSE
@@ -271,6 +272,7 @@ end
 [DEFINE REGION: Setup User Interview]
 Set Variable TARGETDIR to C:\tig2020
 Set Variable TARGETDRIVE to C:\
+Set Variable TARGETDRIVENOSLASH to C:
  
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Local Config into CONFIGCHECK
 if Variable CONFIGCHECK not Contains NO$
@@ -278,6 +280,8 @@ if Variable CONFIGCHECK not Contains NO$
   Set Variable ALREADYINSTALLED to TRUE
   Parse String $CONFIGCHECK$ into Variables TARGETDRIVE and DUMP (Split at first occurrence of pattern)
   Set Variable TARGETDIR to $TARGETDRIVE$tig2020
+  Set Variable TARGETDRIVENOSLASH to $TARGETDRIVE$
+  Replace \ with  in variable TARGETDRIVENOSLASH
    
   Comment: Check the Installer Version.
   Comment: This registry string is only present in installations newer than 50.0.0.0
@@ -329,6 +333,8 @@ if Variable ALREADYINSTALLED not Equals TRUE
   end
   Set Variable TARGETDIR to $TARGETDRIVE$\tig2020
   Replace \\ with \ in variable TARGETDIR
+  Set Variable TARGETDRIVENOSLASH to $TARGETDRIVE$
+  Replace \ with  in variable TARGETDRIVENOSLASH
 end
 Comment: Set the BACKUPDIR
 Set Variable BACKUPDIR to $TARGETDRIVE$\Tiger_Backup
@@ -347,9 +353,8 @@ Define Component: Base\iCharge/iLink
 Define Component: Base\iCharge/iLink\MariaDB
 Define Component: Base\iCharge/iLink\EvMux
 Define Component: Base\iCharge/iLink\Web Front End
-Define Component: Base\iCharge/iLink\iCharge Services
-Define Component: Base\iCharge/iLink\iCharge Services\iPost
 Define Component: Base\iCharge/iLink\Interface Connectors
+Define Component: Base\iCharge/iLink\Interface Connectors\Avaya IP Office
 Define Component: Base\iCharge/iLink\Interface Connectors\Cisco CUCM
 Define Component: Base\iCharge/iLink\Interface Connectors\Generic EXT
 Define Component: Base\iCharge/iLink\Interface Connectors\Generic PMS
@@ -502,7 +507,7 @@ Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Base i
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\MariaDB into INSTALLED_MARIADB
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Silverlight into INSTALLED_SILVERLIGHT
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\EvMux into INSTALLED_EVMUX
-Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\iPost into INSTALLED_IPOST
+Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\AvayaIPOffice into INSTALLED_AVAYAIPOFFICE
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Cisco into INSTALLED_CISCO
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\GenericExt into INSTALLED_GENERICEXT
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\GenericPMS into INSTALLED_GENERICPMS
@@ -639,6 +644,7 @@ else
     Run Program $WINSYSDIR$\net.exe STOP "TigerGenericMXPPMSService" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "TigerGenericEXTService" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "TigerTMSLicenseService" (WAIT)
+    Run Program $WINSYSDIR$\net.exe STOP "TigeriPostService" (WAIT)
     Run Program $WINSYSDIR$\net.exe STOP "MySQL" (WAIT)
      
     Run Program $WINSYSDIR$\sc.exe DELETE "Tiger_Session_Manager" (WAIT)
@@ -657,11 +663,9 @@ else
   [DEFINE WEB MEDIA iChargeiLink]
   Get Component Base\iCharge/iLink Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE not Equals TRUE
-      Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Base, 1
-      Include Script: Base_Environment
-      Include Script: Base_Files
-    end
+    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Base, 1
+    Include Script: Base_Environment
+    Include Script: Base_Files
   else
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Base, 0
   end
@@ -677,6 +681,9 @@ else
     if Variable ALREADYINSTALLED Equals TRUE
       if Variable MYSQLUPGRADEREQUIRED Equals TRUE
         Include Script: MariaDB_Files
+        if Variable TIGERPRO Equals TRUE
+          Include Script: iPost_Files
+        end
       end
     else
       if Variable MAINTENANCE Equals TRUE
@@ -686,6 +693,9 @@ else
         end
       end
       Include Script: MariaDB_Files
+      if Variable TIGERPRO Equals TRUE
+        Include Script: iPost_Files
+      end
     end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\MariaDB, 1
   else
@@ -700,12 +710,6 @@ else
   [DEFINE WEB MEDIA Web Front End]
   Get Component Base\iCharge/iLink\Web Front End Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_SILVERLIGHT Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files EvMux
-      end
-    end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Silverlight, 1
     Include Script: Web_Files
   else
@@ -727,23 +731,19 @@ else
    
    
   label: Files iPost
+   
+  label: Files AvayaIPOffice
   if Variable DEBUGMODE Equals TRUE
-    MessageBox: $TITLE$ Debug, Start iPost Files
+    MessageBox: $TITLE$ Debug, Test IPO Files
   end
    
-  [DEFINE WEB MEDIA iPost]
-  Get Component Base\iCharge/iLink\iCharge Services\iPost Selection State into Variable SELECTED
+  [DEFINE WEB MEDIA Avaya IP Office]
+  Get Component Base\iCharge/iLink\Interface Connectors\Avaya IP Office Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_IPOST Equals TRUE
-        Comment: Skip if the files are already installed
-        GoTo Label: Files Cisco
-      end
-    end
-    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\iPost, 1
-    Include Script: iPost_Files
+    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\AvayaIPOffice, 1
+    Include Script: IPOffice_Files
   else
-    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\iPost, 0
+    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\AvayaIPOffice, 0
   end
    
   label: Files Cisco
@@ -754,12 +754,6 @@ else
   [DEFINE WEB MEDIA Cisco CUCM]
   Get Component Base\iCharge/iLink\Interface Connectors\Cisco CUCM Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_CISCO Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files GenericExt
-      end
-    end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Cisco, 1
     Include Script: Cisco_Files
   else
@@ -774,12 +768,6 @@ else
   [DEFINE WEB MEDIA Generic EXT]
   Get Component Base\iCharge/iLink\Interface Connectors\Generic EXT Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_GENERICEXT Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files GenericPMS
-      end
-    end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\GenericExt, 1
     Include Script: GenericExt_Files
   else
@@ -794,12 +782,6 @@ else
   [DEFINE WEB MEDIA Generic PMS]
   Get Component Base\iCharge/iLink\Interface Connectors\Generic PMS Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_GENERICPMS Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files MXPPMS
-      end
-    end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\GenericPMS, 1
     Include Script: GenericPMS_Files
   else
@@ -814,12 +796,6 @@ else
   [DEFINE WEB MEDIA MXP PMS]
   Get Component Base\iCharge/iLink\Interface Connectors\MXP PMS Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_MXPPMS Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files NEC Univerge
-      end
-    end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\MXPPMS, 1
     Include Script: MXPPMS_Files
   else
@@ -834,12 +810,6 @@ else
   [DEFINE WEB MEDIA NEC Univerge]
   Get Component Base\iCharge/iLink\Interface Connectors\NEC SV8300/SV8500 Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_NECUNIVERGE Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files Panasonic
-      end
-    end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\NECUniverge, 1
     Include Script: NECUniverge_Files
   else
@@ -854,12 +824,6 @@ else
   [DEFINE WEB MEDIA Panasonic KX]
   Get Component Base\iCharge/iLink\Interface Connectors\Panasonic KX-TDA/TDE Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_PANASONIC Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files SpringerMiller
-      end
-    end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Panasonic, 1
     Include Script: Panasonic_Files
   else
@@ -874,12 +838,6 @@ else
   [DEFINE WEB MEDIA Springer Miller Service]
   Get Component Base\iCharge/iLink\Interface Connectors\PAR Springer-Miller Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    if Variable MAINTENANCE Equals TRUE
-      if Variable INSTALLED_SPRINGERMILLER Equals 1
-        Comment: Skip if the files are already installed
-        GoTo Label: Files End
-      end
-    end
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\SpringerMiller, 1
     Include Script: SpringerMiller_Files
   else
@@ -894,6 +852,12 @@ else
   Comment: Remove any duplicate comments left
   Run Program $TARGETDIR$\Temp\fnr.exe --cl --dir "$TARGETDIR$\Web" --fileMask "Web.config" --includeSubDirectories --find "<!--<!--" --replace "<!--" (WAIT)
   Run Program $TARGETDIR$\Temp\fnr.exe --cl --dir "$TARGETDIR$\Web" --fileMask "Web.config" --includeSubDirectories --find ">-->-->" --replace ">-->" (WAIT)
+  Comment: Replace all D: with the install dir
+  Set Variable TARGETDRIVEPLAIN to $TARGETDRIVE$
+  Replace / with  in variable TARGETDRIVEPLAIN
+  Replace \ with  in variable TARGETDRIVEPLAIN
+  Run Program $TARGETDIR$\Temp\fnr.exe --cl --find """D:" --replace """$TARGETDRIVEPLAIN$" --dir "$TARGETDIR$" --fileMask="*.ini, *.xml, *.config, *.cfg, *.bat, *.conf" --includeSubDirectories (WAIT)
+  Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "=D:" --replace "=$TARGETDRIVEPLAIN$" --dir "$TARGETDIR$" --fileMask="*.ini, *.xml, *.config, *.cfg, *.bat, *.conf" --includeSubDirectories (WAIT)
    
   Comment: Now the variable is fully populated, create the Batch File to Recreate Startup tasks as the current user
   Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
@@ -927,6 +891,9 @@ else
             if Variable MYSQLUPGRADEREQUIRED Equals TRUE
               Set Variable PROGRESSTEXT to MariaDB: Installing
               Include Script: MariaDB_Install
+              if Variable TIGERPRO Equals TRUE
+                Include Script: iPost_Install
+              end
               Set Variable PROGRESS to 100
             end
             if Variable INSTALLED_MARIADB Equals 1
@@ -937,6 +904,9 @@ else
           else
             Set Variable PROGRESSTEXT to MariaDB: Installing
             Include Script: MariaDB_Install
+            if Variable TIGERPRO Equals TRUE
+              Include Script: iPost_Install
+            end
             Set Variable PROGRESS to 100
           end
         end
@@ -949,12 +919,6 @@ else
         Get Component Base\iCharge/iLink Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
           Set Variable PROGRESS to 0
-          if Variable INSTALLED_BASE Equals 1
-            if Variable FILEUPGRADEREQUIRED not Equals TRUE
-              Comment: Skip if already installed and we don't need to file upgrade
-              GoTo Label: Install Silverlight
-            end
-          end
           Set Variable PROGRESSTEXT to iCharge: Installing
           Include Script: Base_Install_IIS
           Include Script: Base_Install
@@ -968,10 +932,6 @@ else
          
         Get Component Base\iCharge/iLink\Web Front End Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_SILVERLIGHT Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install EvMux
-          end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to Web Front End: Installing
           Include Script: Web_Install
@@ -990,10 +950,6 @@ else
          
         Get Component Base\iCharge/iLink\EvMux Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_EVMUX Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install iPost
-          end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to EvMux: Installing
           Include Script: EvMux_Install
@@ -1010,20 +966,21 @@ else
           MessageBox: $TITLE$ Debug, Test iPost Install
         end
          
-        Get Component Base\iCharge/iLink\iCharge Services\iPost Selection State into Variable SELECTED
+        label: Install Avaya IP Office
+        if Variable DEBUGMODE Equals TRUE
+          MessageBox: $TITLE$ Debug, Test IPO Install
+        end
+         
+        Get Component Base\iCharge/iLink\Interface Connectors\Avaya IP Office Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_IPOST Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install Cisco
-          end
           Set Variable PROGRESS to 0
-          Set Variable PROGRESSTEXT to iPost: Installing
-          Include Script: iPost_Install
+          Set Variable PROGRESSTEXT to Avaya IPOffice: Installing
+          Include Script: IPOffice_Install
           Set Variable PROGRESS to 100
         else
-          if Variable INSTALLED_IPOST Equals 1
+          if Variable INSTALLED_AVAYAIPOFFICE Equals 1
             Comment: The component is currently installed but no longer selected
-            Include Script: iPost_Uninstall
+            Include Script: IPOffice_Uninstall
           end
         end
          
@@ -1034,10 +991,6 @@ else
          
         Get Component Base\iCharge/iLink\Interface Connectors\Cisco CUCM Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_CISCO Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install GenericExt
-          end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to Cisco Call Manager Service: Installing
           Include Script: Cisco_Install
@@ -1057,10 +1010,6 @@ else
          
         Get Component Base\iCharge/iLink\Interface Connectors\Generic EXT Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_GENERICEXT Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install GenericPMS
-          end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to Generic EXT: Installing
           Include Script: GenericExt_Install
@@ -1079,10 +1028,6 @@ else
          
         Get Component Base\iCharge/iLink\Interface Connectors\Generic PMS Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_GENERICPMS Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install MXPPMS
-          end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to Generic PMS: Installing
           Include Script: GenericPMS_Install
@@ -1101,10 +1046,6 @@ else
          
         Get Component Base\iCharge/iLink\Interface Connectors\MXP PMS Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_MXPPMS Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install NEC Univerge
-          end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to MXP PMS: Installing
           Include Script: MXPPMS_Install
@@ -1123,10 +1064,6 @@ else
          
         Get Component Base\iCharge/iLink\Interface Connectors\NEC SV8300/SV8500 Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_NECUNIVERGE Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install Panasonic TAPI
-          end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to NEC Univerge: Installing
           Include Script: NECUniverge_Install
@@ -1145,10 +1082,6 @@ else
          
         Get Component Base\iCharge/iLink\Interface Connectors\Panasonic KX-TDA/TDE Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_PANASONIC Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install Springer Miller
-          end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to Panasonic TAPI Driver: Installing
           Include Script: Panasonic_Install
@@ -1167,10 +1100,6 @@ else
          
         Get Component Base\iCharge/iLink\Interface Connectors\PAR Springer-Miller Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
-          if Variable INSTALLED_SPRINGERMILLER Equals 1
-            Comment: Skip if already installed
-            GoTo Label: Install End
-          end
           Set Variable PROGRESS to 0
           Set Variable PROGRESSTEXT to Springer Miller: Installing
           Include Script: SpringerMiller_Install
@@ -1194,6 +1123,8 @@ else
   end
   [compiler end]
   Set Variable PROGRESS to 100
+  Delete Files $TARGETDIR$\TigAlertDaemon* (when installing)
+  Delete Files $TARGETDIR$\Temp\* (when installing)
 end
 [END REGION]
 [END REGION]

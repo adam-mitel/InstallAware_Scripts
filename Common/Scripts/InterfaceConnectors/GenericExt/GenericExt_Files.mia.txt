@@ -6,6 +6,8 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running GenericExt_Files
 end
  
+Set Variable PROGRESSTEXT to GenericEXT: Deploying files...
+ 
 Create Folder $TARGETDIR$\GenericEXT
 Create Folder $TARGETDIR$\Web\GenericEXT
  

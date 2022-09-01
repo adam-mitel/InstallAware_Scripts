@@ -6,6 +6,8 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running GenericPMS_Files
 end
  
+Set Variable PROGRESSTEXT to GenericPMS: Deploying files...
+ 
 Create Folder $TARGETDIR$\GenericPMS
 Create Folder $TARGETDIR$\Web\GenericPMS
  

@@ -30,6 +30,9 @@ Write Registry Key HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Environ
 Comment: Set %TIGPATH% Environment variable
 Set Environment Variable %TIGDIR% to $TARGETDIR$
  
+Comment: Create the horrible hardlink to keep our settings in one place. Do not wait for this to complete as the file may already exist and halt.
+Run Program CMD.exe /C mklink c:\Windows\tigersystem.ini $TARGETDIR$\Config\tigersystem.ini
+ 
 Comment: Create the Tiger registry entries
 Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\InstallPath, $TARGETDIR$
 Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\HotelInstallation, 1
@@ -201,12 +204,14 @@ Create Folder $TARGETDIR$\Graphics
 Create Folder $TARGETDIR$\Graphics\Backgrounds
 Create Folder $TARGETDIR$\Graphics\Bitmaps
 Create Folder $TARGETDIR$\Graphics\Icons
-Create Folder $TARGETDIR$\iChargeWinService
+Create Folder $TARGETDIR$\HTTPService
 Create Folder $TARGETDIR$\iLinkManager
 Create Folder $TARGETDIR$\LogFiles
 Create Folder $TARGETDIR$\Scripts
 Create Folder $TARGETDIR$\Temp
 Create Folder $TARGETDIR$\Users
+Create Folder $TARGETDIR$\Users\Locale
+Create Folder $TARGETDIR$\Users\Locale\EN
 Create Folder $TARGETDIR$\Utility
 Create Folder $TARGETDIR$\WorkTemp
 Create Folder $TARGETDIR$\Network
@@ -224,10 +229,8 @@ end
  
 Comment: Grant the current user full user rights to the tig2020 dir
 Run Program ICACLS.exe "$TARGETDIR$" /grant "%USERDOMAIN%\%USERNAME%":(OI)(CI)F (WAIT)
-Comment: Grant any authenticated user full rights to tig2020 dir
-Run Program ICACLS "$TARGETDIR$" /grant "Authenticated Users":(OI)(CI)F (WAIT)
-Set Variable TASKBATTEXT to @ECHO OFF$NEWLINE$$NEWLINE$REM ** Set permissions for the tig2020 directory$NEWLINE$$NEWLINE$ICACLS.exe "$TARGETDIR$" /grant "%USERDOMAIN%\%USERNAME%":(OI)(CI)F$NEWLINE$ICACLS.exe "$TARGETDIR$" /grant "Authenticated Users":(OI)(CI)F$NEWLINE$$NEWLINE$
+Set Variable TASKBATTEXT to @ECHO OFF$NEWLINE$$NEWLINE$REM ** Set permissions for the tig2020 directory$NEWLINE$$NEWLINE$ICACLS.exe "$TARGETDIR$" /grant "%USERDOMAIN%\%USERNAME%":(OI)(CI)F
  
-Comment: Set Hosts default entry
-Write into Text File C:\Windows\System32\drivers\etc\hosts from Value $NEWLINE$127.0.0.1 local.tigertms-apps.com$NEWLINE$ (at end of file)
+Comment: Remove Authenticated Users access (Marriott security scan flagging as insecure)
+Run Program ICACLS.exe "$TARGETDIR$" /remove:g "Authenticated Users" (WAIT)
  

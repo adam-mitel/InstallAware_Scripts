@@ -6,17 +6,18 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running MariaDB_Files
 end
  
+Set Variable PROGRESSTEXT to MariaDB: Deploying files...
+ 
 Create Folder $TARGETDIR$\MariaDB
 Create Folder $TARGETDIR$\MariaDB\bin
 Create Folder $TARGETDIR$\MariaDB\data
 Create Folder $TARGETDIR$\MariaDB\include
 Create Folder $TARGETDIR$\MariaDB\lib
-Create Folder $TARGETDIR$\MariaDB\log
+Create Folder $TARGETDIR$\MariaDB\logs
 Create Folder $TARGETDIR$\MariaDB\share
 Create Folder $TARGETDIR$\MariaDB\temp
  
 if Variable MYSQLUPGRADEREQUIRED Equals TRUE
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MariaDB_10\*.* to $TARGETDIR$\MariaDB, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\HeidiSQL\HeidiSQL_Setup.exe to $TARGETDIR$\HeidiSQL, ignore files matching wildcard pattern(s) *.pdb;
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MariaDB\*.* to $TARGETDIR$\MariaDB, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 end
  

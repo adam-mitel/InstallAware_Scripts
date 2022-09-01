@@ -9,64 +9,68 @@ end
 Set Variable PROGRESSTEXT to iCharge: Configuring INI and Batch files...
  
 Comment: Only if it's a new installation...
-if Variable ALREADYINSTALLED not Equals TRUE
+Comment: if Variable ALREADYINSTALLED not Equals TRUE
+ 
+Comment: Create DC_Start.bat
+Delete Files $TARGETDIR$\Network\Batch\DC_Start.bat (when installing and uninstalling)
+Set Variable DCSTARTBAT to $TARGETDIR$\Network\Bin\RunBat.exe $TARGETDIR$\Network\batch\startup.bat
+Replace \\ with \ in variable DCSTARTBAT
+Write into Text File $TARGETDIR$\Network\Batch\DC_Start.bat from Value $DCSTARTBAT$ (at start of file)
+Write into Text File $TARGETDIR$\Network\Batch\startup.bat from Value  (at start of file)
+ 
+Edit INI File $TARGETDIR$\config\tigersystem.ini, [Directories] AutoReportOutputDirectory=$TARGETDIR$\Autorpt\
+Edit INI File $TARGETDIR$\config\tigersystem.ini, [Directories] AutoReportWorkingDirectory=$TARGETDIR$\Autorpt\
+ 
+if Variable TIGERILINK not Equals TRUE
+  Comment: Set the Paths in Collection.conf
+  Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Module] QuitFile=$TARGETDRIVE$tig2020\Network\Collection.QIT
+  Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Database] TemporaryDirectory=$TARGETDRIVE$tig2020\Network\Tmp
+  Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Fallback for CallTables] Name=$TARGETDRIVE$tig2020\Network\Fallback\CallTables.dat
+  Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Persistent] PersistentParamFile=$TARGETDRIVE$tig2020\Network\Collection\Persistent.conf
+  Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Persistent] PersistentDataFile=$TARGETDRIVE$tig2020\Network\Collection\Persistent.dat
+  Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [WorkingData] Name=$TARGETDRIVE$tig2020\Network\Collection\WorkingData.dat
+  Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [BulletinLog] Name=$TARGETDRIVE$tig2020\Network\Collection\BULLETIN.log
+  Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [EngineeringLog] Name=$TARGETDRIVE$tig2020\Network\Collection\ENGR.log
+  Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [DebugLog] Name=$TARGETDRIVE$tig2020\Network\Collection\DEBUG.log
+  Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [SessionLog] FileName=$TARGETDRIVE$tig2020\Network\Collection\dcmon.log
    
-  Comment: Create DC_Start.bat
-  Set Variable DCSTARTBAT to $TARGETDIR$\Network\Bin\RunBat.exe $TARGETDIR$\Network\batch\startup.bat
-  Replace \\ with \ in variable DCSTARTBAT
-  Write into Text File $TARGETDIR$\Network\Batch\DC_Start.bat from Value $DCSTARTBAT$ (at start of file)
-  Write into Text File $TARGETDIR$\Network\Batch\startup.bat from Value  (at start of file)
-   
-  Edit INI File $TARGETDIR$\config\tigersystem.ini, [Directories] AutoReportOutputDirectory=$TARGETDIR$\Autorpt\
-  Edit INI File $TARGETDIR$\config\tigersystem.ini, [Directories] AutoReportWorkingDirectory=$TARGETDIR$\Autorpt\
-   
-  if Variable TIGERILINK not Equals TRUE
-    Comment: Set the Paths in Collection.conf
-    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Module] QuitFile=$TARGETDRIVE$tig2020\Network\Collection.QIT
-    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Database] TemporaryDirectory=$TARGETDRIVE$tig2020\Network\Tmp
-    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Fallback for CallTables] Name=$TARGETDRIVE$tig2020\Network\Fallback\CallTables.dat
-    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Persistent] PersistentParamFile=$TARGETDRIVE$tig2020\Network\Collection\Persistent.conf
-    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [Persistent] PersistentDataFile=$TARGETDRIVE$tig2020\Network\Collection\Persistent.dat
-    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [WorkingData] Name=$TARGETDRIVE$tig2020\Network\Collection\WorkingData.dat
-    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [BulletinLog] Name=$TARGETDRIVE$tig2020\Network\Collection\BULLETIN.log
-    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [EngineeringLog] Name=$TARGETDRIVE$tig2020\Network\Collection\ENGR.log
-    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [DebugLog] Name=$TARGETDRIVE$tig2020\Network\Collection\DEBUG.log
-    Edit INI File $TARGETDIR$\Network\Collection\Collection.conf, [SessionLog] FileName=$TARGETDRIVE$tig2020\Network\Collection\dcmon.log
-     
-    Comment: Set some defaults in the Switch Samples
-    Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample.conf, [Switch] DiversionChargedPartyRule=3
-    Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample.conf, [Switch] TransferChargedPartyRule=2
-    Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample_2020.conf, [Switch] DiversionChargedPartyRule=3
-    Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample_2020.conf, [Switch] TransferChargedPartyRule=2
-  end
-   
-  Comment: Set up the Automatic Backup Batch variable
-  Set Variable BACKUPBATCHTEXT to @ECHO OFF$NEWLINE$$NEWLINE$ECHO *** Starting a full backup of Tiger Hotel ***$NEWLINE$$NEWLINE$ECHO Starting backup of Database and Call Records to $BACKUPDIR$\db_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -f$TARGETDIR$ -f$BACKUPDIR$\db_backup$NEWLINE$$NEWLINE$ECHO Starting Engineering Backup to $BACKUPDIR$\eng_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -ef$TARGETDIR$ -et$BACKUPDIR$\eng_backup
-  if Variable BACKUP2 Equals TRUE
-    Set Variable TEMP to $BACKUPBATCHTEXT$$NEWLINE$$NEWLINE$ECHO Starting backup of Database and Call Records to $BACKUPDIR2$\db_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -f$TARGETDIR$ -f$BACKUPDIR2$\db_backup$NEWLINE$$NEWLINE$ECHO Starting Engineering Backup to $BACKUPDIR2$\eng_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -ef$TARGETDIR$ -et$BACKUPDIR2$\eng_backup
-    Set Variable BACKUPBATCHTEXT to $TEMP$
-    Set Variable TEMP to 
-  end
-   
-  Comment: Add an IISRESET to the Automatic Backup Batch variable
-  Set Variable TEMP to 
-  Set Variable TEMP to $BACKUPBATCHTEXT$$NEWLINE$$NEWLINE$IISRESET$NEWLINE$$NEWLINE$
+  Comment: Set some defaults in the Switch Samples
+  Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample.conf, [Switch] DiversionChargedPartyRule=3
+  Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample.conf, [Switch] TransferChargedPartyRule=2
+  Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample_2020.conf, [Switch] DiversionChargedPartyRule=3
+  Edit INI File $TARGETDIR$\Network\Switch\Switch01\Sample_2020.conf, [Switch] TransferChargedPartyRule=2
+end
+ 
+Comment: Set up the Automatic Backup Batch variable
+Set Variable BACKUPBATCHTEXT to @ECHO OFF$NEWLINE$$NEWLINE$ECHO *** Starting a full backup of Tiger Hotel ***$NEWLINE$$NEWLINE$ECHO Starting backup of Database and Call Records to $BACKUPDIR$\db_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -f$TARGETDIR$ -f$BACKUPDIR$\db_backup$NEWLINE$$NEWLINE$ECHO Starting Engineering Backup to $BACKUPDIR$\eng_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -ef$TARGETDIR$ -et$BACKUPDIR$\eng_backup
+if Variable BACKUP2 Equals TRUE
+  Set Variable TEMP to $BACKUPBATCHTEXT$$NEWLINE$$NEWLINE$ECHO Starting backup of Database and Call Records to $BACKUPDIR2$\db_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -f$TARGETDIR$ -f$BACKUPDIR2$\db_backup$NEWLINE$$NEWLINE$ECHO Starting Engineering Backup to $BACKUPDIR2$\eng_backup$NEWLINE$$TARGETDIR$\Utility\TigBackup.exe -ef$TARGETDIR$ -et$BACKUPDIR2$\eng_backup
   Set Variable BACKUPBATCHTEXT to $TEMP$
   Set Variable TEMP to 
-   
-  Comment: If Cisco is installed add a restart of DC_CALL_MANAGER
-  Get Component Base\iCharge/iLink\Interface Connectors\Cisco CUCM Selection State into Variable SELECTED
-  if Variable SELECTED Equals TRUE
-    Set Variable TEMP to $BACKUPBATCHTEXT$NET STOP DC_Call_Manager$NEWLINE$NET START DC_Call_Manager$NEWLINE$NEWLINE
-    Set Variable BACKUPBATCHTEXT to $TEMP$
-    Set Variable TEMP to 
-  end
-   
+end
+ 
+Comment: Add an IISRESET and Service Restarts to the Automatic Backup Batch variable
+Set Variable TEMP to 
+Set Variable TEMP to $BACKUPBATCHTEXT$$NEWLINE$$NEWLINE$IISRESET$NEWLINE$$NEWLINE$
+Set Variable BACKUPBATCHTEXT to $TEMP$
+Set Variable TEMP to 
+ 
+Comment: If Cisco is installed add a restart of DC_CALL_MANAGER
+Get Component Base\iCharge/iLink\Interface Connectors\Cisco CUCM Selection State into Variable SELECTED
+if Variable SELECTED Equals TRUE
+  Set Variable TEMP to $BACKUPBATCHTEXT$NET STOP DC_Call_Manager$NEWLINE$NET START DC_Call_Manager$NEWLINE$NEWLINE
+  Set Variable BACKUPBATCHTEXT to $TEMP$
+  Set Variable TEMP to 
+end
+ 
+if Variable ALREADYINSTALLED not Equals TRUE
   Comment: Write the Automatic Backup Batch File
   Replace \\ with \ in variable BACKUPBATCHTEXT
+  Delete Files $TARGETDIR$\Network\Batch\TigerBackup.BAT (when installing)
   Write into Text File $TARGETDIR$\Network\Batch\TigerBackup.BAT from Value $BACKUPBATCHTEXT$ (at start of file)
-   
 end
+ 
+Comment: end
  
 Set Variable PROGRESS to 80
  
@@ -140,7 +144,6 @@ end
 Comment: Do the below for all installations
  
 Comment: Configure the HI Scripts
-Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "FileName=D:\\" --replace "FileName=$TARGETDRIVE$" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
 if Variable MACADDRESS not Equals 
   Run Program $TARGETDIR$\Temp\fnr.exe --cl --find ";MACPrefer=00-00-00-00-00-00" --replace "MACPrefer=$MACADDRESS$" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
   Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "ApplyWMI=0" --replace "ApplyWMI=1" --dir "$TARGETDIR$\Scripts" --fileMask="*.ini" --includeSubDirectories (WAIT)
@@ -157,10 +160,4 @@ Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\iLinkManager\SSRTigerps.dll 
 Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\iLinkManager\SSRclientps.dll (WAIT)
 Run Program $TARGETDIR$\iLinkManager\SSRTiger.exe /Regserver (WAIT)
 Run Program $WINSYSDIR$\Regsvr32.exe /s $TARGETDIR$\chilkatssh.dll (WAIT)
- 
- 
-Comment: Install Services
-Run .NET Installer Class $TARGETDIR$\iChargeWinService\iChargeWinService.exe
-Run Program $WINSYSDIR$\sc.exe CONFIG "iChargeWinService" Start= auto (WAIT)
-Run Program $WINSYSDIR$\sc.exe FAILURE "iChargeWinService" reset= 0 actions= restart/60000 (WAIT)
  

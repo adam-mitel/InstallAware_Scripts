@@ -6,6 +6,8 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running Panasonic_Files
 end
  
+Set Variable PROGRESSTEXT to Panasonic: Deploying files...
+ 
 Create Folder $TARGETDIR$\Panasonic
  
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\Panasonic\tig2020\Panasonic\*.* to $TARGETDIR$\Panasonic, ignore files matching wildcard pattern(s) *.pdb;

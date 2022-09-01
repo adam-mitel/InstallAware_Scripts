@@ -6,6 +6,8 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running Base_Files
 end
  
+Set Variable PROGRESSTEXT to iCharge: Deploying files...
+ 
 Comment: Clean up any potential existing files
 Delete Files $TARGETDIR$\iLinkManager\*.dll (when installing and uninstalling)
 Delete Files $TARGETDIR$\iLinkManager\*.exe (when installing and uninstalling)
@@ -13,31 +15,39 @@ Delete Files $TARGETDIR$\iLinkManager\*.bat (when installing and uninstalling)
 Delete Files $TARGETDIR$\Network\Bin\*.exe (when installing)
  
 Comment: Install the Base Files
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\tig2020\*.* to $TARGETDIR$, ignore files matching wildcard pattern(s) tiglicensegen.exe;messageemulator.exe;*.pdb;, include subfolders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Config\*.* to $TARGETDIR$\Config, ignore files matching wildcard pattern(s) *.pdb;
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Carriers\*.* to $TARGETDIR$\Carriers, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\ExternalMessageBroker\*.* to $TARGETDIR$\ExternalMessageBroker, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\FilePrinter\*.* to $TARGETDIR$\FilePrinter, ignore files matching wildcard pattern(s) *.pdb;
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Graphics\*.* to $TARGETDIR$\Graphics, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\iLinkManager\*.* to $TARGETDIR$\iLinkManager, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Manuals\*.* to $TARGETDIR$\Manuals, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Utility\*.* to $TARGETDIR$\Utility, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Standalone\* to $TARGETDIR$, ignore files matching wildcard pattern(s) *.pdb;
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\Bin\RunBat.exe to $TARGETDIR$\Network\Bin
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\iChargeWinService\*.* to $TARGETDIR$\iChargeWinService, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Scripts\*.* to $TARGETDIR$\Scripts, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-if Variable TIGERILINK not Equals TRUE
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\*.* to $TARGETDIR$\Network, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\UnoClient\*.* to $TARGETDIR$\UnoClient, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\tig2020\*.* to $TARGETDIR$, ignore files matching wildcard pattern(s) tiglicensegen.exe;messageemulator.exe;*.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;CiscoCMClient.ini;, include subfolders
+if Variable ALREADYINSTALLED Equals FALSE
+  Comment: If it's not installed, deploy the config files and default IF_START.BAT
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Config\*.* to $TARGETDIR$\Config, ignore files matching wildcard pattern(s) *.pdb;
+  Write into Text File $TARGETDIR$\IF_START.BAT from Value @ECHO OFF$NEWLINE$SLEEP 30$NEWLINE$ECHO Starting T2SSM...$NEWLINE$START $TARGETDIR$\T2SSM.exe$NEWLINE$ECHO Starting Crond32 Server...$NEWLINE$START $TARGETDIR$\Crond32_srvr.exe$NEWLINE$SLEEP 5$NEWLINE$$NEWLINE$ (at end of file)
 end
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Carriers\*.* to $TARGETDIR$\Carriers, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\ExternalMessageBroker\*.* to $TARGETDIR$\ExternalMessageBroker, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\HTTPService\*.* to $TARGETDIR$\HTTPService, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\FilePrinter\*.* to $TARGETDIR$\FilePrinter, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Graphics\*.* to $TARGETDIR$\Graphics, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\iLinkManager\*.* to $TARGETDIR$\iLinkManager, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;IFConfig.xml, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Manuals\*.* to $TARGETDIR$\Manuals, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Utility\*.* to $TARGETDIR$\Utility, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Standalone\* to $TARGETDIR$, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\Bin\RunBat.exe to $TARGETDIR$\Network\Bin
+if Variable TIGERILINK not Equals TRUE
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\*.* to $TARGETDIR$\Network, ignore files matching wildcard pattern(s) *.pdb;dcmon.ini;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\UnoClient\*.* to $TARGETDIR$\UnoClient, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
+end
+Comment: Disable older overwrite for scripts and deploy then set back
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Scripts\*.his to $TARGETDIR$\Scripts, include subfolders
+Set Variable NATIVE_OVERWRITE_OLDER to FALSE
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Scripts\*.ini to $TARGETDIR$\Scripts, include subfolders
+Set Variable NATIVE_OVERWRITE_OLDER to TRUE
  
 Comment: Install mysql.exe and mysqldump.exe for TigBackup if MariaDB is not selected
 Get Component Base\iCharge/iLink\MariaDB Selection State into Variable REGCHECK
 if Variable REGCHECK Equals FALSE
   Create Folder $TARGETDIR$\MariaDB
   Create Folder $TARGETDIR$\MariaDB\bin
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MariaDB_10\bin\mysql.exe to $TARGETDIR$\MariaDB\bin, ignore files matching wildcard pattern(s) *.pdb;
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MariaDB_10\bin\mysqldump.exe to $TARGETDIR$\MariaDB\bin, ignore files matching wildcard pattern(s) *.pdb;
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MariaDB\bin\mysql.exe to $TARGETDIR$\MariaDB\bin, ignore files matching wildcard pattern(s) *.pdb;
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MariaDB\bin\mysqldump.exe to $TARGETDIR$\MariaDB\bin, ignore files matching wildcard pattern(s) *.pdb;
 end
  
 Comment: Install the Temp files
@@ -62,6 +72,8 @@ if Variable ALREADYINSTALLED Equals TRUE
   Delete Files $SHORTCUTFILESALL$\Tiger Hotel 2020\* (when installing)
   Delete Files $DESKTOPDIR$\Tiger Hotel 2020 (when installing)
   Delete Files $DESKTOPDIR$\Tiger Hotel 2020.lnk (when installing)
+  Delete Files $DESKTOPDIR$\TigerTMS iCharge (when installing)
+  Delete Files $DESKTOPDIR$\TigerTMS iCharge.lnk (when installing)
   Call DLL Function kernel32.dll->RemoveDirectoryA (get result into variable PLUGINRESULT)
 end
  
@@ -95,11 +107,17 @@ else
 end
  
 Comment: Create iLinkManager Batch Files, schedule as disabled and add to TASKBATTEXT
-Write into Text File $TARGETDIR$\iLinkManager\START.bat from Value @ECHO OFF$NEWLINE$$PATHDRIVE$$NEWLINE$CD \tig2020\iLinkManager$NEWLINE$START iLinkManager.exe$NEWLINE$ (at end of file)
+Delete Files $TARGETDIR$\Network\Batch\ILM_START.BAT (when installing and uninstalling)
+Write into Text File $TARGETDIR$\Network\Batch\ILM_START.bat from Value @ECHO OFF$NEWLINE$$TARGETDRIVENOSLASH$$NEWLINE$CD \tig2020\iLinkManager$NEWLINE$START iLinkManager.exe$NEWLINE$ (at end of file)
 Run Program SCHTASKS.exe /DELETE /TN "CG Start Interface Manager" /F
-Run Program SCHTASKS.exe /CREATE /TN "TT Start iLinkManager" /TR "$TARGETDIR$\iLinkManager\START.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F
-Run Program SCHTASKS.exe /CHANGE /TN "TT Start iLinkManager" /DISABLE
-Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Create IFM tasks$NEWLINE$SCHTASKS.exe /CREATE /TN "TT Start iLinkManager" /TR "$TARGETDIR$\iLinkManager\START.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F
+Run Program SCHTASKS.exe /CREATE /TN "TT Start iLinkManager" /TR "$TARGETDIR$\Network\Batch\ILM_START.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F
+Set Variable TASKBATTEXT to $TASKBATTEXT$REM ** Create IFM tasks$NEWLINE$SCHTASKS.exe /CREATE /TN "TT Start iLinkManager" /TR "$TARGETDIR$\Network\Batch\ILM_START.bat" /SC onlogon /RL HIGHEST /DELAY 0000:10 /F$NEWLINE$$NEWLINE$
+ 
+Comment: Delete the old bodge if it exists
+Delete Files $TARGETDIR$\Network\Batch\Maintenance.bat (when installing and uninstalling)
+Delete Files $TARGETDIR$\Utility\maintenance.exe (when installing and uninstalling)
+Delete Files $TARGETDIR$\Utility\SilentCMD.exe (when installing and uninstalling)
+Run Program SCHTASKS.exe /DELETE /TN "TT Maintenance" /F
  
 if Variable SKIPALL not Equals TRUE
   if Variable OSTYPE not Equals EMBEDDED

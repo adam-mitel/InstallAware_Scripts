@@ -6,6 +6,8 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running MXPPMS_Files
 end
  
+Set Variable PROGRESSTEXT to MXPPMS: Deploying files...
+ 
 Create Folder $TARGETDIR$\MXPPMS
 Create Folder $TARGETDIR$\Web\MXPPMS
  

@@ -105,6 +105,10 @@ if Variable DISMLIST Contains IIS-WebSockets$NEWLINE$
   Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-WebSockets
 end
  
+if Variable DISMLIST Contains IIS-ApplicationInit$NEWLINE$
+  Set Variable DISMCMD to $DISMCMD$ /featurename:IIS-ApplicationInit
+end
+ 
 if Variable DISMLIST Contains NetFx4ServerFeatures
   Set Variable DISMCMD to $DISMCMD$ /featurename:NetFx4ServerFeatures
 end

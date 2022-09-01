@@ -10,8 +10,6 @@ Set Variable PROGRESSTEXT to Panasonic KXTAPI: Installing...
 Does File Exist $TARGETDIR$\Panasonic\TopTapi3.ocx (get result into variable CHECKSYSTEM)
 if Variable CHECKSYSTEM Equals TRUE
   Run Program $WINSYSDIR$\Regsvr32.exe /S $TARGETDIR$\Panasonic\topTapi3.ocx (WAIT)
-else
-  MessageBox: ERROR, No Panasonic files in tig2020
 end
  
 Set Variable PROGRESS to 50
@@ -19,8 +17,6 @@ Set Variable PROGRESS to 50
 Does File Exist $WINSYSDIR$\TopTapi3.ocx (get result into variable CHECKSYSTEM)
 if Variable CHECKSYSTEM Equals TRUE
   Run Program $WINSYSDIR$\Regsvr32.exe /S $WINSYSDIR$\topTapi3.ocx (WAIT)
-else
-  MessageBox: ERROR, No Panasonic files in $WINSYSDIR$
 end
  
 Run Program NETSH.exe advfirewall firewall delete rule name="TigerTMS Panasonic KX-TDA TSP Link" (WAIT)

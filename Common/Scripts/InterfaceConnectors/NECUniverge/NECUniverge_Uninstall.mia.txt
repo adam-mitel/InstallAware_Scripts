@@ -11,4 +11,5 @@ Delete Files $STARTUPALL$\Univerge SMDR Collector (when installing and uninstall
  
 Comment: Delete the scheduled task
 Run Program SCHTASKS.exe /DELETE /TN "CG NEC Univerge SMDR Collector" /F (WAIT)
+Run Program SCHTASKS.exe /DELETE /TN "TT NEC Univerge SMDR Collector" /F (WAIT)
  

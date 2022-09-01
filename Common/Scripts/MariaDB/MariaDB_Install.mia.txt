@@ -14,6 +14,7 @@ Edit INI File $TARGETDIR$\MariaDB\data\my.ini, [mysqld] datadir=$MYSQLDIR$data
 Edit INI File $TARGETDIR$\MariaDB\data\my.ini, [mysqld] tmpdir=$MYSQLDIR$temp
 Edit INI File $TARGETDIR$\MariaDB\data\my.ini, [mysqld] plugin_dir=$MYSQLDIR$lib/plugin
 Edit INI File $TARGETDIR$\MariaDB\data\my.ini, [mysqld] mitel_key_management_filename=$MYSQLDIR$data/keys.enc
+Edit INI File $TARGETDIR$\MariaDB\data\my.ini, [mysqld] server_audit_file_path=$MYSQLDIR$logs/server_audit.log
 Edit INI File $TARGETDIR$\MariaDB\data\my.ini, [mysqld] general_log_file=$MYSQLDIR$logs/general.log
  
 Comment: Install the service
@@ -33,17 +34,6 @@ if Variable ALREADYINSTALLEDVERSION not Greater Than (Version) 7.0.0.0
   Comment: Delete OpenSSL files
   Run Program CMD.exe /C DEL /Q /F $TARGETDIR$\Temp\OpenSSL (WAIT)
 end
-Comment: If it's new we also need to set up the encryption // commenting out should be covered above
-Comment: if Variable ALREADYINSTALLED Equals FALSE
-Comment: Comment: Install OpenSSL
-Comment: Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\OpenSSL\*.* to $TARGETDIR$\Temp\OpenSSL, ignore files matching wildcard pattern(s) *.pdb;
-Comment: Comment: Create the keys
-Comment: Run Program $TARGETDIR$\Temp\OpenSSL\CreateKeys.bat , startup in folder $TARGETDIR$\Temp\OpenSSL (WAIT)
-Comment: Comment: Move the key to MariaDB\data
-Comment: Move Local Files $TARGETDIR$\Temp\OpenSSL\keys.enc to $TARGETDIR$\MariaDB\data\
-Comment: Comment: Delete OpenSSL files
-Comment: Run Program CMD.exe /C DEL /Q /F $TARGETDIR$\Temp\OpenSSL (WAIT)
-Comment: end
  
 Comment: Start the service
 Set Variable PROGRESSTEXT to MariaDB: Starting MariaDB Service
@@ -78,18 +68,36 @@ if Variable DEBUGMODE not Equals TRUE
   Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
 end
  
-Comment: Run the MySQL_Execute.SQL to configure anything else that needs doing
+Comment: Run the procedure to convert all MyISAM tables to Aria
 Set Variable PROGRESSTEXT to MariaDB: Converting Storage Engine for all database tables. This could take a while...
-Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -N -h127.0.0.1 -uroot -pR3gI7iG3r -e "SELECT CONCAT('ALTER TABLE ', CONCAT(CONCAT(TABLE_SCHEMA, '.'), TABLE_NAME), ' ENGINE=Aria;') FROM information_schema.TABLES WHERE `ENGINE` LIKE 'MyISAM' AND TABLE_SCHEMA <> 'information_schema' AND TABLE_SCHEMA <> 'performance_schema';" >"$TARGETDIR$\Temp\MySQL_Convert.sql" (WAIT)
-Run Program $WINSYSDIR$\timeout.exe 2 (WAIT)
-Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r -f < "$TARGETDIR$\Temp\MySQL_Convert.SQL" (WAIT)
+Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -N -h127.0.0.1 -uroot -pR3gI7iG3r -e "CALL tigersys.ConvertMyISAMToAria;" (WAIT)
+Comment: Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -N -h127.0.0.1 -uroot -pR3gI7iG3r -e "SELECT CONCAT('ALTER TABLE ', CONCAT(CONCAT(TABLE_SCHEMA, '.'), TABLE_NAME), ' ENGINE=Aria;') FROM information_schema.TABLES WHERE `ENGINE` LIKE 'MyISAM' AND TABLE_SCHEMA <> 'information_schema' AND TABLE_SCHEMA <> 'performance_schema';" >"$TARGETDIR$\Temp\MySQL_Convert.sql" (WAIT)
+Comment: Run Program $WINSYSDIR$\timeout.exe 2 (WAIT)
+Comment: Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r -f < "$TARGETDIR$\Temp\MySQL_Convert.SQL" (WAIT)
+ 
+Comment: Run the MySQL_Execute_All.SQL to configure anything else that needs doing
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MySQL_Execute_All.SQL to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
+Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\MySQL_Execute_All.SQL" (WAIT)
 if Variable DEBUGMODE not Equals TRUE
   Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
 end
  
+Comment: Run the MySQL_Execute_NewOnly.SQL for new installs
+if Variable ALREADYINSTALLED Equals FALSE
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MySQL_Execute_NewOnly.SQL to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
+  Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\MySQL_Execute_NewOnly.SQL" (WAIT)
+  if Variable DEBUGMODE not Equals TRUE
+    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+  end
+end
+ 
 Comment: Install HeidiSQL
 Set Variable PROGRESSTEXT to MariaDB: Installing HeidiSQL
-Run Program $TARGETDIR$\HeidiSQL\HeidiSQL_Setup.exe /SILENT (WAIT)
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\HeidiSQL\HeidiSQL_Setup.exe to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
+Run Program $TARGETDIR$\Temp\HeidiSQL_Setup.exe /SILENT (WAIT)
+if Variable DEBUGMODE not Equals TRUE
+  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+end
 Set Variable PROGRESS to 100
 Write Registry Key HKCU\Software\HeidiSQL\GroupTreeObjects, 1
 Write Registry Key HKCU\Software\HeidiSQL\DisplayBLOBsAsText, 1

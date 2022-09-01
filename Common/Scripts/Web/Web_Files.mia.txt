@@ -6,14 +6,17 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running Web_Files
 end
  
+Set Variable PROGRESSTEXT to Web: Deploying files...
+ 
 Comment: IISRESET and rename any old files
 Run Program IISRESET.exe  (WAIT)
-Run Program $WINSYSDIR$\CMD.exe /C REN API API_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
+Run Program $WINSYSDIR$\CMD.exe /C REN TTAPI TTAPI_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
 Run Program $WINSYSDIR$\CMD.exe /C REN Dashboard Dashboard_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
 Run Program $WINSYSDIR$\CMD.exe /C REN iChargeUno iChargeUno_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
  
-Create Folder $TARGETDIR$\Web\API
+Create Folder $TARGETDIR$\Web\TTAPI
 Create Folder $TARGETDIR$\Web\Dashboard
+Create Folder $TARGETDIR$\Web\iLinkWeb
 if Variable TIGERILINK not Equals TRUE
   Create Folder $TARGETDIR$\Web\iChargeUno
 end
@@ -23,23 +26,29 @@ Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuil
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\crossdomain.xml to $WWWROOTDIR$, ignore files matching wildcard pattern(s) *.pdb;
  
 Comment: Install the Web folders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\API\*.* to $TARGETDIR$\Web\API, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\TTAPI\*.* to $TARGETDIR$\Web\TTAPI, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\Dashboard\*.* to $TARGETDIR$\Web\Dashboard, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\iLinkWeb\*.* to $TARGETDIR$\Web\iLinkWeb, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 if Variable TIGERILINK not Equals TRUE
   Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\iChargeUno\*.* to $TARGETDIR$\Web\iChargeUno, ignore files matching wildcard pattern(s) *.pdb;autorpt;, include subfolders
   Comment: Remove the Company Logo placeholder from Uno
   Run Program $WINSYSDIR$\CMD.exe /C REN CompanyLogo.png _CompanyLogo.png, startup in folder $TARGETDIR$\Web\iChargeUno\ClientBin\Images\ (WAIT)
 end
  
+Comment: Delete old iCharge folder
+Run Program $WINSYSDIR$\CMD.exe /C rmdir $TARGETDIR$\Web\iCharge /S /Q (WAIT)
+ 
 Comment: Create Shortcut to Silverlight
-Delete Files $SHORTCUTFOLDER$\TigerTMS iCharge (when installing)
-Delete Files $DESKTOPDIR$\TigerTMS iCharge (when installing)
 Delete Files $SHORTCUTFOLDER$\TigerTMS iCharge.lnk (when installing)
 Delete Files $DESKTOPDIR$\TigerTMS iCharge.lnk (when installing)
-Delete Files $SHORTCUTFOLDER$\Dashboard (when installing)
-Delete Files $DESKTOPDIR$\Dashboard (when installing)
+Delete Files $SHORTCUTFOLDER$\TigerTMS iCharge.lnk (when installing)
+Delete Files $SHORTCUTFOLDER$\iCharge.lnk (when installing)
+Delete Files $DESKTOPDIR$\iCharge.lnk (when installing)
+Delete Files $DESKTOPDIR$\TigerTMS iCharge.lnk (when installing)
 Delete Files $SHORTCUTFOLDER$\Dashboard.lnk (when installing)
 Delete Files $DESKTOPDIR$\Dashboard.lnk (when installing)
-Create Shortcut $SHORTCUTFOLDER$\Dashboard to https://local.tigertms-apps.com/Dashboard
-Create Shortcut $DESKTOPDIR$\Dashboard to https://local.tigertms-apps.com/Dashboard
+Delete Files $SHORTCUTFOLDER$\Dashboard.lnk (when installing)
+Delete Files $DESKTOPDIR$\Dashboard.lnk (when installing)
+Create Shortcut $SHORTCUTFOLDER$\Dashboard to http://localhost/Dashboard
+Create Shortcut $DESKTOPDIR$\Dashboard to http://localhost/Dashboard
  

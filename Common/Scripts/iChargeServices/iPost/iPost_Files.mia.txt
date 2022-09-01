@@ -6,6 +6,8 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running iPost_Files
 end
  
+Set Variable PROGRESSTEXT to iPost: Deploying files...
+ 
 Create Folder $TARGETDIR$\iPost
  
 Comment: Delete existing DLL and EXE
