@@ -1,0 +1,17 @@
+Comment: **************************************************************************************
+Comment: ***************************** iLinkWeb Specific Script  ******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running iLinkWeb_Uninstall
+end
+ 
+Comment: Remove any iLinkWeb instance
+Get IIS Index for Site "Default Web Site" into WEBSITEINDEXVAR
+Delete Virtual Folder "iLinkWeb" in IIS Site #$WEBSITEINDEXVAR$
+if Variable OS64 Equals TRUE
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: iLinkWeb (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: iLinkWeb (WAIT)
+end
+ 

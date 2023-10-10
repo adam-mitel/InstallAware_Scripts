@@ -165,7 +165,7 @@ if Variable DISMLIST Contains TelnetClient$NEWLINE$
   Set Variable DISMCMD to $DISMCMD$ /featurename:TelnetClient
 end
  
-Set Variable PROGRESSTEXT to Enabling IIS/ASPNET using Windows Update, this may take serveral minutes...
+Set Variable PROGRESSTEXT to Enabling IIS/ASPNET using Windows Update, this may take several minutes...
 Set Variable DISMCMD to $DISMCMD$ /NoRestart
  
 Comment: If we're doing offline DISM append the disc path
@@ -205,4 +205,12 @@ if Variable OS64 Equals TRUE
   Comment: Set the windows paths back to x86
   Set Win32 - Native 32 bit Windows and Windows 32 on Windows 64 (WOW64) - installation mode
 end
+ 
+Comment: Write the network batch file with the DISM command
+Create Folder $TARGETDIR$\Network\Batch
+Delete Files $TARGETDIR$\Network\Batch\DISM.bat (when installing and uninstalling)
+Write into Text File $TARGETDIR$\Network\Batch\DISM.bat from Value DISM.exe $DISMCMD$$NEWLINE$DISM.exe /online /disable-feature /featurename:IIS-HttpCompressionStatic /featurename:IIS-HttpCompressionDynamic /NoRestart$NEWLINE$ (at start of file)
+ 
+Comment: Reset IIS
+Run Program IISRESET.exe  (WAIT)
  

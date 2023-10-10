@@ -26,29 +26,27 @@ else
   Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: iChargeUno (WAIT)
 end
  
-if Variable TIGERILINK not Equals TRUE
-  Comment: Create iCharge for Vista or Newer
-  Create Virtual Folder "iChargeUno" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\iChargeUno
-   
-  Comment: If Windows is x64, we need to set the application pool to 32 bit mode and other settings
-  if Variable OS64 Equals TRUE
-    Set Variable PROGRESSTEXT to Web Front End: Setting Application Pool to x86 Mode...
-    Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iChargeUno" /enable32BitAppOnWin64:true (WAIT)
-    Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iChargeUno" -processmodel.loaduserprofile:"false" (WAIT)
-  else
-    Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "iChargeUno" -processmodel.loaduserprofile:"false" (WAIT)
-  end
-   
-  if Variable MARIASERVER not Equals 
-    Comment: If MariaDB isn't installed change the Web.config to point at the new IP Address
-    Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "connectionString=\"Server=localhost;Port=3306" --replace "connectionString=\"Server=$MARIASERVER$;Port=3306" --dir "$TARGETDIR$\Web\iCharge" --fileMask="Web.config" (WAIT)
-  end
-   
-  Comment: Grant permissions to tig2020 for the IIS Application Pool
-  Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\iChargeUno":(OI)(CI)F
-   
-  Set Variable PROGRESS to 35
+Comment: Create iCharge for Vista or Newer
+Create Virtual Folder "iChargeUno" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\iChargeUno
+ 
+Comment: If Windows is x64, we need to set the application pool to 32 bit mode and other settings
+if Variable OS64 Equals TRUE
+  Set Variable PROGRESSTEXT to Web Front End: Setting Application Pool to x86 Mode...
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iChargeUno" /enable32BitAppOnWin64:true (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iChargeUno" -processmodel.loaduserprofile:"false" (WAIT)
+else
+  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "iChargeUno" -processmodel.loaduserprofile:"false" (WAIT)
 end
+ 
+if Variable MARIASERVER not Equals 
+  Comment: If MariaDB isn't installed change the Web.config to point at the new IP Address
+  Run Program $TARGETDIR$\Temp\fnr.exe --cl --find "connectionString=\"Server=localhost;Port=3306" --replace "connectionString=\"Server=$MARIASERVER$;Port=3306" --dir "$TARGETDIR$\Web\iCharge" --fileMask="Web.config" (WAIT)
+end
+ 
+Comment: Grant permissions to tig2020 for the IIS Application Pool
+Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\iChargeUno":(OI)(CI)F
+ 
+Set Variable PROGRESS to 35
  
 Comment: *** DASHBOARD ***
 Comment: Remove any existing Dashboard instance
@@ -65,7 +63,7 @@ Create Virtual Folder "Dashboard" in IIS Site #$WEBSITEINDEXVAR$, pointing to ph
 Comment: If Windows is x64, we need to set the application pool to 32 bit mode and other settings
 if Variable OS64 Equals TRUE
   Set Variable PROGRESSTEXT to Web Front End: Setting Application Pool to x86 Mode...
-  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "Dashboard" -managedRuntimeVersion:v4.0 (WAIT)
+  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "Dashboard" -managedRuntimeVersion:"" (WAIT)
   Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "Dashboard" -startMode:AlwaysRunning (WAIT)
   Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "Dashboard" -processModel.loadUserProfile:"true" (WAIT)
   Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "Dashboard" -processModel.idleTimeout:00:00:00 (WAIT)
@@ -84,41 +82,6 @@ Comment: Grant permissions to tig2020 for the IIS Application Pool
 Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\Dashboard":(OI)(CI)F
  
 Set Variable PROGRESS to 70
- 
-Comment: *** iLinkWeb ***
-Comment: Remove any existing iLinkWeb instance
-Delete Virtual Folder "iLinkWeb" in IIS Site #$WEBSITEINDEXVAR$
-if Variable OS64 Equals TRUE
-  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe delete apppool /apppool.name: iLinkWeb (WAIT)
-else
-  Run Program $WINSYSDIR$\inetsrv\appcmd.exe delete apppool /apppool.name: iLinkWeb (WAIT)
-end
- 
-Comment: Create the configured IIS Web Site and set Read Permissions for IIS
-Create Virtual Folder "iLinkWeb" in IIS Site #$WEBSITEINDEXVAR$, pointing to physical location $TARGETDIR$\Web\iLinkWeb
- 
-Comment: If Windows is x64, we need to set the application pool to 32 bit mode and other settings
-if Variable OS64 Equals TRUE
-  Set Variable PROGRESSTEXT to Web Front End: Setting Application Pool to x86 Mode...
-  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iLinkWeb" -managedRuntimeVersion:v4.0 (WAIT)
-  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iLinkWeb" -startMode:AlwaysRunning (WAIT)
-  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iLinkWeb" -processModel.loadUserProfile:"true" (WAIT)
-  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iLinkWeb" -processModel.idleTimeout:00:00:00 (WAIT)
-  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set apppool "iLinkWeb" -recycling.periodicRestart.time:00:00:00 (WAIT)
-  Run Program $WINSYSDIR64$\inetsrv\appcmd.exe set app "Default Web Site/iLinkWeb" -preloadEnabled:true (WAIT)
-else
-  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "iLinkWeb" -managedRuntimeVersion:v4.0 (WAIT)
-  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "iLinkWeb" -startMode:AlwaysRunning (WAIT)
-  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "iLinkWeb" -processModel.loadUserProfile:"true" (WAIT)
-  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "iLinkWeb" -processModel.idleTimeout:00:00:00 (WAIT)
-  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set apppool "iLinkWeb" -recycling.periodicRestart.time:00:00:00 (WAIT)
-  Run Program $WINSYSDIR$\inetsrv\appcmd.exe set app "Default Web Site/iLinkWeb" -preloadEnabled:true (WAIT)
-end
- 
-Comment: Grant permissions to tig2020 for the IIS Application Pool
-Run Program ICACLS.exe "$TARGETDIR$" /grant "IIS AppPool\iLinkWeb":(OI)(CI)F
- 
-Set Variable PROGRESS to 80
  
 Comment: Remove any existing TTAPI instance
 Delete Virtual Folder "TTAPI" in IIS Site #$WEBSITEINDEXVAR$

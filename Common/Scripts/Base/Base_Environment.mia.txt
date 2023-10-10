@@ -70,7 +70,7 @@ Comment: Add/readd Windows Firewall exceptions
 Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS HTTP/HTTPS for IIS" dir=in action=allow protocol=TCP localport=80,443 (WAIT)
 Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS MySQL" dir=in action=allow protocol=TCP localport=3306 (WAIT)
 Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS Interfaces" dir=in action=allow protocol=TCP localport=21,22,1900-1910,2561,3000-3010,5000-5099,9000 (WAIT)
-Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS SIP UDP" dir=in action=allow protocol=UDP localport=5060 (WAIT)
+Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS SIP UDP" dir=in action=allow protocol=UDP localport=5060,49152-49251 (WAIT)
 Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS HI.exe" dir=in action=allow program="$TARGETDIR$\HI.exe" enable=yes (WAIT)
 Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS EvMux.exe" dir=in action=allow program="$TARGETDIR$\evmux.exe" enable=yes (WAIT)
 Run Program NETSH.exe advfirewall firewall add rule name="TigerTMS FTP Reports" dir=in action=allow program="$TARGETDIR$\ftpd_srv.exe" enable=yes (WAIT)
@@ -209,6 +209,7 @@ Create Folder $TARGETDIR$\iLinkManager
 Create Folder $TARGETDIR$\LogFiles
 Create Folder $TARGETDIR$\Scripts
 Create Folder $TARGETDIR$\Temp
+Create Folder $TARGETDIR$\TigerTMS.SendEmail
 Create Folder $TARGETDIR$\Users
 Create Folder $TARGETDIR$\Users\Locale
 Create Folder $TARGETDIR$\Users\Locale\EN

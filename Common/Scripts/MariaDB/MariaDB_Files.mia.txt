@@ -18,6 +18,14 @@ Create Folder $TARGETDIR$\MariaDB\share
 Create Folder $TARGETDIR$\MariaDB\temp
  
 if Variable MYSQLUPGRADEREQUIRED Equals TRUE
+  Comment: Stop MySQL
+  Run Program $WINSYSDIR$\net.exe STOP MySQL (WAIT)
+  Run Program $WINSYSDIR$\taskkill.exe /IM mysqld.exe /F (WAIT)
+   
+  Comment: Delete the old MySQL Database 
+  Delete Files $TARGETDIR$\MariaDB\Data\mysql\* (when installing and uninstalling)
+   
+  Comment: Deploy the new MariaDB files
   Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MariaDB\*.* to $TARGETDIR$\MariaDB, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 end
  

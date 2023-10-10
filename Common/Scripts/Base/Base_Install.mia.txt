@@ -141,6 +141,22 @@ else
   end
 end
  
+Comment: Run the MySQL_Execute_All.SQL to configure anything else that needs doing
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MySQL_Execute_All.SQL to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
+Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\MySQL_Execute_All.SQL" (WAIT)
+if Variable DEBUGMODE not Equals TRUE
+  Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+end
+ 
+Comment: Run the MySQL_Execute_NewOnly.SQL for new installs
+if Variable ALREADYINSTALLED Equals FALSE
+  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\MariaDB\MySQL_Execute_NewOnly.SQL to $TARGETDIR$\Temp, ignore files matching wildcard pattern(s) *.pdb;
+  Run Program CMD.exe /C $TARGETDIR$\MariaDB\bin\mysql.exe -h127.0.0.1 -uroot -pR3gI7iG3r < "$TARGETDIR$\Temp\MySQL_Execute_NewOnly.SQL" (WAIT)
+  if Variable DEBUGMODE not Equals TRUE
+    Call DLL Function kernel32.dll->DeleteFileA (get result into variable PLUGINRESULT)
+  end
+end
+ 
 Comment: Do the below for all installations
  
 Comment: Configure the HI Scripts

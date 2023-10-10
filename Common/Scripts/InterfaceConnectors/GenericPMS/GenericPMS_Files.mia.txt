@@ -8,6 +8,9 @@ end
  
 Set Variable PROGRESSTEXT to GenericPMS: Deploying files...
  
+Comment: Stop IIS
+Run Program IISRESET.exe /STOP (WAIT)
+ 
 Create Folder $TARGETDIR$\GenericPMS
 Create Folder $TARGETDIR$\Web\GenericPMS
  
@@ -17,4 +20,7 @@ Delete Files $TARGETDIR$\GenericPMS\*.exe (when installing and uninstalling)
  
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\GenericPMS\tig2020\*.* to $TARGETDIR$\GenericPMS, ignore files matching wildcard pattern(s) *.pdb;
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\GenericPMS\wwwroot\*.* to $TARGETDIR$\Web\GenericPMS, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+ 
+Comment: Start IIS
+Run Program IISRESET.exe  (WAIT)
  

@@ -6,9 +6,15 @@ if Variable DEBUGMODE Equals TRUE
   MessageBox: $TITLE$ Debug, Running IPOffice_Files
 end
  
+Comment: Stop IIS
+Run Program IISRESET.exe /STOP (WAIT)
+ 
 Create Folder $TARGETDIR$\Avaya
 Create Folder $TARGETDIR$\Web\AvayaIPOffice
  
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\AvayaIPOffice\wwwroot\AvayaIPOffice\*.* to $TARGETDIR$\Web\AvayaIPOffice, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\AvayaIPOffice\tig2020\Avaya\*.* to $TARGETDIR$\Avaya, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+ 
+Comment: Start IIS
+Run Program IISRESET.exe  (WAIT)
  

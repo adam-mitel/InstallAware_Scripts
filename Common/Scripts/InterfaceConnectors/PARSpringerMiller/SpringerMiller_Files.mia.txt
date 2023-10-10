@@ -8,9 +8,15 @@ end
  
 Set Variable PROGRESSTEXT to Springer Miller: Deploying files...
  
+Comment: Stop IIS
+Run Program IISRESET.exe /STOP (WAIT)
+ 
 Create Folder $TARGETDIR$\SpringerMiller
 Create Folder $TARGETDIR$\Web\SpringerMiller
  
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\SpringerMiller\tig2020\SpringerMiller\*.* to $TARGETDIR$\SpringerMiller, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\SpringerMiller\wwwroot\SpringerMiller\*.* to $TARGETDIR$\Web\SpringerMiller, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+ 
+Comment: Start IIS
+Run Program IISRESET.exe  (WAIT)
  

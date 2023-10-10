@@ -1,0 +1,20 @@
+Comment: **************************************************************************************
+Comment: ***************************** iLinkWeb Specific Script  ******************************
+Comment: **************************************************************************************
+ 
+if Variable DEBUGMODE Equals TRUE
+  MessageBox: $TITLE$ Debug, Running iLinkWeb_Files
+end
+ 
+Set Variable PROGRESSTEXT to iLinkWeb: Deploying files...
+Comment: Stop IIS
+Run Program IISRESET.exe /STOP (WAIT)
+ 
+Run Program $WINSYSDIR$\CMD.exe /C REN iLinkWeb iLinkWeb_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
+ 
+Create Folder $TARGETDIR$\Web\iLinkWeb
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\iLinkWeb\*.* to $TARGETDIR$\Web\iLinkWeb, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
+ 
+Comment: Start IIS
+Run Program IISRESET.exe  (WAIT)
+ 

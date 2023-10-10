@@ -12,7 +12,8 @@ Comment: Clean up any potential existing files
 Delete Files $TARGETDIR$\iLinkManager\*.dll (when installing and uninstalling)
 Delete Files $TARGETDIR$\iLinkManager\*.exe (when installing and uninstalling)
 Delete Files $TARGETDIR$\iLinkManager\*.bat (when installing and uninstalling)
-Delete Files $TARGETDIR$\Network\Bin\*.exe (when installing)
+Delete Files $TARGETDIR$\Network\Bin\*.exe (when installing and uninstalling)
+Delete Files $TARGETDIR$\Utility\mysqldump.exe (when installing and uninstalling)
  
 Comment: Install the Base Files
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\tig2020\*.* to $TARGETDIR$, ignore files matching wildcard pattern(s) tiglicensegen.exe;messageemulator.exe;*.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;CiscoCMClient.ini;, include subfolders
@@ -30,6 +31,7 @@ Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuil
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Manuals\*.* to $TARGETDIR$\Manuals, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Utility\*.* to $TARGETDIR$\Utility, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Standalone\* to $TARGETDIR$, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\TigerTMS.SendEmail\*.* to $TARGETDIR$\TigerTMS.SendEmail, ignore files matching wildcard pattern(s) *.pdb;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;IFConfig.xml, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\Bin\RunBat.exe to $TARGETDIR$\Network\Bin
 if Variable TIGERILINK not Equals TRUE
   Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Network\*.* to $TARGETDIR$\Network, ignore files matching wildcard pattern(s) *.pdb;dcmon.ini;ezreports.ini;tigersystem.ini;TigerAsteriskCollection.ini;ifaceconfig.ini;CiscoCMClient.ini;, include subfolders
@@ -40,6 +42,9 @@ Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuil
 Set Variable NATIVE_OVERWRITE_OLDER to FALSE
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Base\Scripts\*.ini to $TARGETDIR$\Scripts, include subfolders
 Set Variable NATIVE_OVERWRITE_OLDER to TRUE
+ 
+Comment: Delete TigAlertDaemon which is no longer needed in v7
+Delete Files $TARGETDIR$\tigalertdaemon.exe (when installing and uninstalling)
  
 Comment: Install mysql.exe and mysqldump.exe for TigBackup if MariaDB is not selected
 Get Component Base\iCharge/iLink\MariaDB Selection State into Variable REGCHECK
@@ -160,8 +165,20 @@ if Variable SKIPALL not Equals TRUE
   end
    
   Comment: Install required runtimes
-  Run Program $TARGETDIR$\Temp\dotnet-hosting-3.1.21-win.exe /install /quiet /norestart (WAIT)
-  Run Program $TARGETDIR$\Temp\windowsdesktop-runtime-5.0.13-win-x64.exe /install /quiet /norestart (WAIT)
+  Set Variable PROGRESSTEXT to iCharge: Installing .NET Core...
+  Set Variable PROGRESS to 10
+  Run Program $TARGETDIR$\Temp\dotnet-core-uninstall.exe /install /quiet /norestart (WAIT)
+  Set Variable PROGRESS to 30
+  Run Program $TARGETDIR$\Temp\dotnet-hosting-6.exe /install /quiet /norestart (WAIT)
+  Comment: Remove old runtimes
+  Set Variable PROGRESSTEXT to iCharge: Removing old .NET Core...
+  Set Variable PROGRESS to 70
+  Run Program dotnet-core-uninstall.exe remove --all-below 6.0.0 --runtime --yes --force (WAIT)
+  Run Program dotnet-core-uninstall.exe remove --all-below 6.0.0 --aspnet-runtime --yes --force (WAIT)
+  Run Program dotnet-core-uninstall.exe remove --all-below 6.0.0 --hosting-bundle --yes --force (WAIT)
+  Run Program dotnet-core-uninstall.exe remove --all-below 6.0.0 --sdk --yes --force (WAIT)
+  Set Variable PROGRESS to 95
+  Run Program IISRESET.exe  (WAIT)
    
   Comment: Delete Temp files
   Run Program CMD.exe /C DEL /Q $TARGETDIR$\Temp\vcredist* (WAIT)

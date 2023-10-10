@@ -14,5 +14,9 @@ Comment: Delete existing DLL and EXE
 Delete Files $TARGETDIR$\iPost\*.dll (when installing and uninstalling)
 Delete Files $TARGETDIR$\iPost\*.exe (when installing and uninstalling)
  
+Comment: Rename the existing config file so it's backed up
+Run Program $WINSYSDIR$\CMD.exe /C REN iPost.exe.config iPost.exe.PREUPGRADE.$CURRENTDATE$.config, startup in folder $TARGETDIR$\iPost (WAIT)
+ 
+Comment: Deploy files
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\iChargeServices\iPost\*.* to $TARGETDIR$\iPost, ignore files matching wildcard pattern(s) *.pdb;
  

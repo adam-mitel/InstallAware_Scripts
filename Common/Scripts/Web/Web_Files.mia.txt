@@ -8,18 +8,16 @@ end
  
 Set Variable PROGRESSTEXT to Web: Deploying files...
  
-Comment: IISRESET and rename any old files
-Run Program IISRESET.exe  (WAIT)
+Comment: Stop IIS and rename any old files
+Run Program IISRESET.exe /STOP (WAIT)
+ 
 Run Program $WINSYSDIR$\CMD.exe /C REN TTAPI TTAPI_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
 Run Program $WINSYSDIR$\CMD.exe /C REN Dashboard Dashboard_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
 Run Program $WINSYSDIR$\CMD.exe /C REN iChargeUno iChargeUno_$CURRENTDATE$, startup in folder $TARGETDIR$\Web (WAIT)
  
 Create Folder $TARGETDIR$\Web\TTAPI
 Create Folder $TARGETDIR$\Web\Dashboard
-Create Folder $TARGETDIR$\Web\iLinkWeb
-if Variable TIGERILINK not Equals TRUE
-  Create Folder $TARGETDIR$\Web\iChargeUno
-end
+Create Folder $TARGETDIR$\Web\iChargeUno
  
 Comment: Install the Policy XML files required by Uno
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\clientaccesspolicy.xml to $WWWROOTDIR$, ignore files matching wildcard pattern(s) *.pdb;
@@ -28,12 +26,9 @@ Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuil
 Comment: Install the Web folders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\TTAPI\*.* to $TARGETDIR$\Web\TTAPI, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\Dashboard\*.* to $TARGETDIR$\Web\Dashboard, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\iLinkWeb\*.* to $TARGETDIR$\Web\iLinkWeb, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
-if Variable TIGERILINK not Equals TRUE
-  Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\iChargeUno\*.* to $TARGETDIR$\Web\iChargeUno, ignore files matching wildcard pattern(s) *.pdb;autorpt;, include subfolders
-  Comment: Remove the Company Logo placeholder from Uno
-  Run Program $WINSYSDIR$\CMD.exe /C REN CompanyLogo.png _CompanyLogo.png, startup in folder $TARGETDIR$\Web\iChargeUno\ClientBin\Images\ (WAIT)
-end
+Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\Web\iChargeUno\*.* to $TARGETDIR$\Web\iChargeUno, ignore files matching wildcard pattern(s) *.pdb;autorpt;, include subfolders
+Comment: Remove the Company Logo placeholder from Uno
+Run Program $WINSYSDIR$\CMD.exe /C REN CompanyLogo.png _CompanyLogo.png, startup in folder $TARGETDIR$\Web\iChargeUno\ClientBin\Images\ (WAIT)
  
 Comment: Delete old iCharge folder
 Run Program $WINSYSDIR$\CMD.exe /C rmdir $TARGETDIR$\Web\iCharge /S /Q (WAIT)
@@ -51,4 +46,7 @@ Delete Files $SHORTCUTFOLDER$\Dashboard.lnk (when installing)
 Delete Files $DESKTOPDIR$\Dashboard.lnk (when installing)
 Create Shortcut $SHORTCUTFOLDER$\Dashboard to http://localhost/Dashboard
 Create Shortcut $DESKTOPDIR$\Dashboard to http://localhost/Dashboard
+ 
+Comment: Start IIS
+Run Program IISRESET.exe  (WAIT)
  

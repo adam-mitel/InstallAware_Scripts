@@ -7,6 +7,8 @@ if Variable DEBUGMODE Equals TRUE
 end
  
 Set Variable PROGRESSTEXT to GenericEXT: Deploying files...
+Comment: Stop IIS
+Run Program IISRESET.exe /STOP (WAIT)
  
 Create Folder $TARGETDIR$\GenericEXT
 Create Folder $TARGETDIR$\Web\GenericEXT
@@ -17,4 +19,7 @@ Delete Files $TARGETDIR$\GenericEXT\*.exe (when installing and uninstalling)
  
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\GenericExt\tig2020\*.* to $TARGETDIR$\GenericEXT, ignore files matching wildcard pattern(s) *.pdb;, include subfolders
 Install Files \\ttstorage\Central\Master\Test\TigerTMS_Installer\Common\LiveBuild\InterfaceConnectors\GenericExt\wwwroot\*.* to $TARGETDIR$\Web\GenericEXT, ignore files matching wildcard pattern(s) *.pdb, include subfolders
+ 
+Comment: Start IIS
+Run Program IISRESET.exe  (WAIT)
  

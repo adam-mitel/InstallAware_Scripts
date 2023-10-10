@@ -358,7 +358,7 @@ Define Component: Base\iCharge/iLink\Interface Connectors\Avaya IP Office
 Define Component: Base\iCharge/iLink\Interface Connectors\Cisco CUCM
 Define Component: Base\iCharge/iLink\Interface Connectors\Generic EXT
 Define Component: Base\iCharge/iLink\Interface Connectors\Generic PMS
-Define Component: Base\iCharge/iLink\Interface Connectors\MXP PMS
+Define Component: Base\iCharge/iLink\Interface Connectors\iLinkWeb
 Define Component: Base\iCharge/iLink\Interface Connectors\NEC SV8300/SV8500
 Define Component: Base\iCharge/iLink\Interface Connectors\Panasonic KX-TDA/TDE
 Define Component: Base\iCharge/iLink\Interface Connectors\PAR Springer-Miller
@@ -511,7 +511,7 @@ Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\AvayaI
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Cisco into INSTALLED_CISCO
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\GenericExt into INSTALLED_GENERICEXT
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\GenericPMS into INSTALLED_GENERICPMS
-Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\MXPPMS into INSTALLED_MXPPMS
+Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\iLinkWeb into INSTALLED_ILINKWEB
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\NECUniverge into INSTALLED_NECUniverge
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\Panasonic into INSTALLED_PANASONIC
 Check Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\SpringerMiller into INSTALLED_SPRINGERMILLER
@@ -590,7 +590,7 @@ if Variable REMOVE Equals TRUE
   Include Script: Cisco_Uninstall
   Include Script: GenericExt_Uninstall
   Include Script: GenericPMS_Uninstall
-  Include Script: MXPPMS_Uninstall
+  Include Script: iLinkWeb_Uninstall
   Include Script: SpringerMiller_Uninstall
    
   Comment: Remove Services
@@ -788,18 +788,18 @@ else
     Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\GenericPMS, 0
   end
    
-  label: Files MXPPMS
+  label: Files iLinkWeb
   if Variable DEBUGMODE Equals TRUE
-    MessageBox: $TITLE$ Debug, Test MXPPMS Files
+    MessageBox: $TITLE$ Debug, Test iLinkWeb Files
   end
    
-  [DEFINE WEB MEDIA MXP PMS]
-  Get Component Base\iCharge/iLink\Interface Connectors\MXP PMS Selection State into Variable SELECTED
+  [DEFINE WEB MEDIA iLinkWeb]
+  Get Component Base\iCharge/iLink\Interface Connectors\iLinkWeb Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
-    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\MXPPMS, 1
-    Include Script: MXPPMS_Files
+    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\iLinkWeb, 1
+    Include Script: iLinkWeb_Files
   else
-    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\MXPPMS, 0
+    Write Registry Key HKLM\SOFTWARE\Tiger Communications\Tiger 2020\Features\iLinkWeb, 0
   end
    
   label: Files NEC Univerge
@@ -1039,21 +1039,21 @@ else
           end
         end
          
-        label: Install MXPPMS
+        label: Install iLinkWeb
         if Variable DEBUGMODE Equals TRUE
-          MessageBox: $TITLE$ Debug, Test MXPPMSInstall
+          MessageBox: $TITLE$ Debug, Test iLinkWeb Install
         end
          
-        Get Component Base\iCharge/iLink\Interface Connectors\MXP PMS Selection State into Variable SELECTED
+        Get Component Base\iCharge/iLink\Interface Connectors\iLinkWeb Selection State into Variable SELECTED
         if Variable SELECTED Equals TRUE
           Set Variable PROGRESS to 0
-          Set Variable PROGRESSTEXT to MXP PMS: Installing
-          Include Script: MXPPMS_Install
+          Set Variable PROGRESSTEXT to iLinkWeb PMS: Installing
+          Include Script: iLinkWeb_Install
           Set Variable PROGRESS to 100
         else
-          if Variable INSTALLED_MXPPMS Equals 1
+          if Variable INSTALLED_ILINKWEB Equals 1
             Comment: The component is currently installed but no longer selected
-            Include Script: MXPPMS_Uninstall
+            Include Script: iLinkWeb_Uninstall
           end
         end
          
